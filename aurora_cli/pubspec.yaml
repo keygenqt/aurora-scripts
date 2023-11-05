@@ -1,0 +1,29 @@
+name: aurora_cli
+description: A collection of scripts to help the Aurora OS developer.
+version: 1.0.0
+# repository: https://github.com/my_org/my_repo
+
+environment:
+  sdk: ^3.1.5
+
+# Add regular dependencies here.
+dependencies:
+  # https://pub.dev/packages/args
+  # Parses raw command-line arguments into a set of options and values.
+  args: ^2.4.2
+
+  # https://pub.dev/packages/mason_logger
+  # A reusable logger used by the Mason CLI.
+  mason_logger: ^0.2.10
+
+  # https://pub.dev/packages/path
+  # A comprehensive, cross-platform path manipulation library for Dart.
+  path: ^1.8.3
+
+  # https://pub.dev/packages/get_it
+  # This is a simple Service Locator for Dart and Flutter projects with some additional goodies
+  # highly inspired by Splat.
+  get_it: ^7.6.4
+
+dev_dependencies:
+  lints: ^3.0.0
