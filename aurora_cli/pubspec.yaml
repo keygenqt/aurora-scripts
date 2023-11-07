@@ -24,6 +24,3 @@ dependencies:
   # This is a simple Service Locator for Dart and Flutter projects with some additional goodies
   # highly inspired by Splat.
   get_it: ^7.6.4
-
-dev_dependencies:
-  lints: ^3.0.0

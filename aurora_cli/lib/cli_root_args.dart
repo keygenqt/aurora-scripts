@@ -2,7 +2,7 @@ import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
 import 'package:aurora_cli/cli_constants.dart';
 import 'package:aurora_cli/cli_di.dart';
-import 'package:aurora_cli/commands_flutter.dart';
+import 'package:aurora_cli/commands_psdk.dart';
 import 'package:mason_logger/mason_logger.dart';
 
 class CLIRootArgs extends CommandRunner<int> {
@@ -12,7 +12,7 @@ class CLIRootArgs extends CommandRunner<int> {
     // Init di
     initDI();
     // Add sub commands
-    addCommand(CommandsFlutter());
+    addCommand(CommandsPsdk());
     // Add root options and flags
     argParser
       ..addFlag(
