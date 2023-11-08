@@ -6,11 +6,11 @@ An application that combines different scripts that help an Aurora OS programmer
 
 ## Install
 
+[![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-black.svg)](https://snapcraft.io/aurora-cli)
+
 ```
 sudo snap install aurora-cli --devmode
 ```
-
-[![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-black.svg)](https://snapcraft.io/aurora-cli)
 
 ## Features
 
