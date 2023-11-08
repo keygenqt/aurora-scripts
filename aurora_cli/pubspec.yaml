@@ -28,3 +28,4 @@ dependencies:
   # https://pub.dev/packages/settings_yaml
   # Provide a very simple method to use yaml files for reading/writing an app's configuration.
   settings_yaml: ^7.1.0
+  

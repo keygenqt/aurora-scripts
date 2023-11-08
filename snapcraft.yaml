@@ -1,6 +1,6 @@
 name: aurora-cli
 base: core22
-version: '0.0.1'
+version: '0.0.2'
 summary: A collection of scripts to help the Aurora OS developer.
 description: |
   Bash scripts combined into one CLI application written in Dart, 
@@ -30,6 +30,11 @@ parts:
     source: bin
     organize:
       run.sh: bin/run.sh
+  configuration:
+    plugin: dump
+    source: .
+    organize:
+      configuration.yaml: def_configuration.yaml
 
 apps:
   aurora-cli:

@@ -1,5 +1,13 @@
+import 'dart:io';
+
 /// Constant name app
-const cliName = 'aurora_cli';
+final cliName = Platform.environment['SNAP_NAME']!;
 
 /// Constant version app
-const cliVersion = '0.0.1';
+final cliVersion = Platform.environment['SNAP_VERSION']!;
+
+/// Path to snap folder application
+final pathSnap = Platform.environment['SNAP']!;
+
+/// Path to common folder application
+final pathUserCommon = Platform.environment['SNAP_USER_COMMON']!;
