@@ -4,17 +4,27 @@
 
 An application that combines different scripts that help an Aurora OS programmer in his daily work. You can use separate scripts - each of them is an atomic unit. Or install a CLI application (available in snap) and use all the scripts if necessary with a convenient interface.
 
+## Install
+
+```
+sudo snap install aurora-cli --devmode
+```
+
 [![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-black.svg)](https://snapcraft.io/aurora-cli)
 
 ## Features
 
-**1**. Helps to sign (re-sign) packages located in a folder. Just go to your RPM packages folder and enter the command:
+#### Sign
+
+Helps to sign (re-sign) packages located in a folder. Just go to your RPM packages folder and enter the command:
 
 ```
 aurora-cli psdk --sign <KEY>
 ```
 
-`<KEY>` - There are only 3 of them: extended, regular, system. Settings `~/snap/aurora-cli/common/configuration.yaml`:
+`<KEY>` - There are only 3 of them: `extended`, `regular`, `system`. 
+
+Settings `~/snap/aurora-cli/common/configuration.yaml`:
 
 ```yaml
 sign:
@@ -23,15 +33,9 @@ sign:
     cert: /path/to/cert.pem
 ```
 
-## Install
-
-```
-sudo snap install aurora-cli --devmode
-```
-
 ## Disable sudo PSDK
 
-<USERNAME> - `id -un`
+`<USERNAME>` - `id -un`
 
 Add file `/etc/sudoers.d/mer-sdk-chroot`:
 
