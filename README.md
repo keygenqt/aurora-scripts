@@ -14,7 +14,7 @@ sudo snap install aurora-cli --devmode
 
 ## Features
 
-#### Sign
+#### 1. Sign
 
 Helps to sign (re-sign) packages located in a folder. Just go to your RPM packages folder and enter the command:
 
