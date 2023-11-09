@@ -45,15 +45,15 @@ sign:
 
 Install Aurora Platform SDK version 4.0.2.249.
 
-#### 2. psdk/remove
+#### 3. psdk/remove
 
 Remove Aurora Platform SDK.
 
-#### 2. flutter/install
+#### 4. flutter/install
 
 Install latest Flutter SDK for Aurora OS.
 
-#### 2. flutter/remove
+#### 5. flutter/remove
 
 Remove Flutter SDK.
 
