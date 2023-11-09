@@ -22,7 +22,7 @@ sudo snap install aurora-cli --channel=candidate --devmode
 
 ## Features
 
-#### 1. Sign
+#### 1. psdk/sign
 
 Helps to sign (re-sign) packages located in a folder. Just go to your RPM packages folder and enter the command:
 
@@ -40,6 +40,22 @@ sign:
     key: /path/to/key.pem
     cert: /path/to/cert.pem
 ```
+
+#### 2. psdk/install
+
+Install Aurora Platform SDK version 4.0.2.249.
+
+#### 2. psdk/remove
+
+Remove Aurora Platform SDK.
+
+#### 2. flutter/install
+
+Install latest Flutter SDK for Aurora OS.
+
+#### 2. flutter/remove
+
+Remove Flutter SDK.
 
 ### License
 
