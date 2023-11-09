@@ -1,5 +1,7 @@
 # Aurora CLI
 
+![picture](data/preview2.png)
+
 [![aurora-cli](https://snapcraft.io/aurora-cli/badge.svg)](https://snapcraft.io/aurora-cli)
 
 An application that combines different scripts that help an Aurora OS programmer in his daily work. You can use separate scripts - each of them is an atomic unit. Or install a CLI application (available in snap) and use all the scripts if necessary with a convenient interface.
@@ -10,6 +12,12 @@ An application that combines different scripts that help an Aurora OS programmer
 
 ```
 sudo snap install aurora-cli --devmode
+```
+
+or candidate
+
+```
+sudo snap install aurora-cli --channel=candidate --devmode
 ```
 
 ## Features
@@ -31,24 +39,6 @@ sign:
   extended:
     key: /path/to/key.pem
     cert: /path/to/cert.pem
-```
-
-## Disable sudo PSDK
-
-`<USERNAME>` - `id -un`
-
-Add file `/etc/sudoers.d/mer-sdk-chroot`:
-
-```
-<USERNAME> ALL=(ALL) NOPASSWD: /home/<USERNAME>/AuroraPlatformSDK/sdks/aurora_psdk/mer-sdk-chroot  
-Defaults!/home/<USERNAME>/AuroraPlatformSDK/sdks/aurora_psdk/mer-sdk-chroot env_keep += "SSH_AGENT_PID SSH_AUTH_SOCK"  
-```
-
-Add file `/etc/sudoers.d/sdk-chroot`:
-
-```
-<USERNAME> ALL=(ALL) NOPASSWD: /home/<USERNAME>/AuroraPlatformSDK/sdks/aurora_psdk/sdk-chroot  
-Defaults!/home/<USERNAME>/AuroraPlatformSDK/sdks/aurora_psdk/sdk-chroot env_keep += "SSH_AGENT_PID SSH_AUTH_SOCK"  
 ```
 
 ### License

@@ -9,7 +9,7 @@ import 'package:mason_logger/mason_logger.dart';
 
 import 'package:path/path.dart' as p;
 
-enum CommandsPsdkArg { sign }
+enum CommandsPsdkArg { sign, install, remove }
 
 class CommandsPsdk extends Command<int> {
   CommandsPsdk() {
@@ -19,6 +19,16 @@ class CommandsPsdk extends Command<int> {
         help: 'Sign RPM packages directly from the directory.',
         valueHelp: 'extended|regular|system',
         defaultsTo: null,
+      )
+      ..addFlag(
+        'install',
+        negatable: false,
+        help: 'Install Aurora Platform SDK version 4.0.2.249.',
+      )
+      ..addFlag(
+        'remove',
+        negatable: false,
+        help: 'Remove Aurora Platform SDK.',
       );
   }
 
@@ -32,6 +42,14 @@ class CommandsPsdk extends Command<int> {
 
   CommandsPsdkArg? _getArg(ArgResults? args) {
     final list = [];
+
+    if (argResults?['install'] == true) {
+      list.add(CommandsPsdkArg.install);
+    }
+
+    if (argResults?['remove'] == true) {
+      list.add(CommandsPsdkArg.remove);
+    }
 
     if (argResults?['sign'] != null) {
       switch (argResults?['sign']) {
@@ -72,6 +90,12 @@ class CommandsPsdk extends Command<int> {
             ..detail('Show verbose sign');
         }
         break;
+      case CommandsPsdkArg.install:
+        _logger.info(await _install());
+        break;
+      case CommandsPsdkArg.remove:
+        _logger.info(await _remove());
+        break;
       default:
         return ExitCode.usage.code;
     }
@@ -91,6 +115,32 @@ class CommandsPsdk extends Command<int> {
         '-c',
         keys['cert']!,
       ],
+    );
+    return result.stderr.toString().isNotEmpty ? result.stderr : result.stdout;
+  }
+
+  Future<String> _install() async {
+    _logger.info(
+        'The installation has started, please wait, the process is not fast. The longest thing here is to download the archives...');
+    final result = await Process.run(
+      p.join(
+        pathSnap,
+        'scripts',
+        'psdk_install.sh',
+      ),
+      [],
+    );
+    return result.stderr.toString().isNotEmpty ? result.stderr : result.stdout;
+  }
+
+  Future<String> _remove() async {
+    final result = await Process.run(
+      p.join(
+        pathSnap,
+        'scripts',
+        'psdk_remove.sh',
+      ),
+      [],
     );
     return result.stderr.toString().isNotEmpty ? result.stderr : result.stdout;
   }
