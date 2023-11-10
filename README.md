@@ -22,40 +22,14 @@ sudo snap install aurora-cli --channel=candidate --devmode
 
 ## Features
 
-#### 1. psdk/sign
+* psdk
+  - install - Install Aurora Platform SDK version 4.0.2.249.
+  - remove - Remove Aurora Platform SDK.
+  - sign - Helps to sign (re-sign) packages located in a folder.
+* flutter
+  - install - Install latest Flutter SDK for Aurora OS.
+  - remove - Remove Flutter SDK.
 
-Helps to sign (re-sign) packages located in a folder. Just go to your RPM packages folder and enter the command:
-
-```
-aurora-cli psdk --sign <KEY>
-```
-
-`<KEY>` - There are only 3 of them: `extended`, `regular`, `system`. 
-
-Settings `~/snap/aurora-cli/common/configuration.yaml`:
-
-```yaml
-sign:
-  extended:
-    key: /path/to/key.pem
-    cert: /path/to/cert.pem
-```
-
-#### 2. psdk/install
-
-Install Aurora Platform SDK version 4.0.2.249.
-
-#### 3. psdk/remove
-
-Remove Aurora Platform SDK.
-
-#### 4. flutter/install
-
-Install latest Flutter SDK for Aurora OS.
-
-#### 5. flutter/remove
-
-Remove Flutter SDK.
 
 ### License
 

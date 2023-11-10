@@ -120,8 +120,10 @@ class CommandsPsdk extends Command<int> {
   }
 
   Future<String> _install() async {
-    _logger.info(
-        'The installation has started, please wait, the process is not fast. The longest thing here is to download the archives...');
+    _logger
+      ..info('The installation has started, please wait.')
+      ..info("It's not very fast, sometimes data doesn't download quickly...")
+      ..info('');
     final result = await Process.run(
       p.join(
         pathSnap,

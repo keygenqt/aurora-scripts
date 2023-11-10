@@ -1,12 +1,22 @@
 #!/bin/bash
 
+## For snap
+
+if [ ! -z "$SNAP_USER_COMMON" ]; then
+    HOME=$(cd "$SNAP_USER_COMMON/../../.." && echo $PWD)
+fi
+
+
 ## Check psdk
-if [ -z "$PSDK_DIR" ]; then
-    echo "Not found PSDK_DIR. See more: https://developer.auroraos.ru/doc/software_development/psdk";
+
+if [ -z "$PSDK_DIR" ] || [ ! -d "$HOME/AuroraPlatformSDK" ]; then
+    echo "Not found PSDK. Install command - 'aurora-cli psdk --install'"
+    echo "See more: https://developer.auroraos.ru/doc/software_development/psdk"
     exit 1
 fi
 
 ## Get params keys
+
 while getopts k:c: flag; do
   case "${flag}" in
   k) key=${OPTARG} ;;
@@ -19,15 +29,18 @@ while getopts k:c: flag; do
 done
 
 ## Check params keys
+
 if [ -z "$key" ] || ! [ -f "$key" ] || [ -z "$cert" ] || ! [ -f "$cert" ]; then
   echo "Specify paths to existing files!"
   exit 1
 fi
 
 ## Get list rmp
+
 RPMS=$(ls "$PWD" | grep -i .rpm | tr '\n' ';');
 
 ## List to array
+
 IFS=';' read -r -a array <<< "$RPMS"
 
 if [ -z "$array" ]; then
@@ -36,6 +49,7 @@ if [ -z "$array" ]; then
 fi
 
 ## Aurora Platform SDK requires superuser rights
+
 if ! [ -f "/etc/sudoers.d/mer-sdk-chroot" ]; then
   sudo echo
 else
@@ -43,6 +57,7 @@ else
 fi
 
 ## Sign array
+
 for file in "${array[@]}"
 do
   ## Remove sign if exist

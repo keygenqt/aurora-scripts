@@ -14,7 +14,8 @@ FOLDER=$HOME/AuroraPlatformSDK
 
 ## Check psdk
 
-if [ ! -e "$FOLDER" ]; then
+if [ ! -d "$FOLDER" ]; then
+    echo
     echo "Already deleted!"
     exit 1
 fi

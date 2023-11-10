@@ -8,6 +8,15 @@ if [ ! -z "$SNAP_USER_COMMON" ]; then
     HOME=$(cd "$SNAP_USER_COMMON/../../.." && echo $PWD)
 fi
 
+
+## Check psdk
+
+if [ -z "$PSDK_DIR" ] || [ ! -d "$HOME/AuroraPlatformSDK" ]; then
+  echo "Not found PSDK. Install command - 'aurora-cli psdk --install'"
+  echo "See more: https://developer.auroraos.ru/doc/software_development/psdk"
+  exit 1
+fi
+
 ## Variables
 
 GIT_URL="https://gitlab.com/omprussia/flutter/flutter/-/archive/master/flutter-master.tar.gz"
@@ -17,14 +26,9 @@ TARGET=$($PSDK_DIR/sdk-chroot sdk-assistant list | grep armv7hl | head -n 1 | se
 
 ## Checks
 
-if [ -z "$PSDK_DIR" ]; then
-    echo "Not found PSDK_DIR. See more: https://developer.auroraos.ru/doc/software_development/psdk";
-    exit 1
-fi
-
 if [ -e "$FOLDER/flutter" ]; then
-    echo "Already installed!"
-    exit 1
+  echo "Already installed!"
+  exit 1
 fi
 
 ## Check opt folder

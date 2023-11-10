@@ -21,9 +21,9 @@ NAME=$(basename $URL_TOOLING | sed s/.tar.[a-z]*[0-9]*//g | sed s/-base-Aurora_S
 
 ## Check psdk
 
-if [ -z "$PSDK_DIR" ] || [ -e "$FOLDER" ]; then
-    echo "Already installed!"
-    exit 1
+if [ -d "$FOLDER" ]; then
+  echo "Already installed!"
+  exit 1
 fi
 
 ## Clear if exist

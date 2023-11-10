@@ -70,7 +70,9 @@ class CommandsFlutter extends Command<int> {
   }
 
   Future<String> _install() async {
-    _logger.info('The installation has started, please wait...');
+    _logger
+      ..info('The installation has started, please wait...')
+      ..info('');
     final result = await Process.run(
       p.join(
         pathSnap,
