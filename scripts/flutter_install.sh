@@ -8,7 +8,6 @@ if [ ! -z "$SNAP_USER_COMMON" ]; then
     HOME=$(cd "$SNAP_USER_COMMON/../../.." && echo $PWD)
 fi
 
-
 ## Check psdk
 
 if [ -z "$PSDK_DIR" ] || [ ! -d "$HOME/AuroraPlatformSDK" ]; then
@@ -26,7 +25,7 @@ TARGET=$($PSDK_DIR/sdk-chroot sdk-assistant list | grep armv7hl | head -n 1 | se
 
 ## Checks
 
-if [ -e "$FOLDER/flutter" ]; then
+if [ -d "$FOLDER/flutter" ]; then
   echo "Already installed!"
   exit 1
 fi

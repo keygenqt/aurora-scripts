@@ -6,7 +6,6 @@ if [ ! -z "$SNAP_USER_COMMON" ]; then
     HOME=$(cd "$SNAP_USER_COMMON/../../.." && echo $PWD)
 fi
 
-
 ## Check psdk
 
 if [ -z "$PSDK_DIR" ] || [ ! -d "$HOME/AuroraPlatformSDK" ]; then
