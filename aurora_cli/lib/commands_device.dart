@@ -160,6 +160,8 @@ class CommandsDevice extends Command<int> {
       [
         '-i',
         device['ip']!,
+        '-p',
+        device['port']!,
       ],
     );
     return result.stderr.toString().isNotEmpty ? result.stderr : result.stdout;
@@ -175,6 +177,8 @@ class CommandsDevice extends Command<int> {
       [
         '-i',
         device['ip']!,
+        '-p',
+        device['port']!,
         '-c',
         argResults?['command'],
       ],

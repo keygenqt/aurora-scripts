@@ -36,10 +36,11 @@ class Configuration {
         try {
           result.add({
             'ip': device['ip']!,
+            'port': (device['port'] ?? 22).toString(),
             'pass': device['pass']!,
           });
         } catch (e) {
-          print('Get dvices: $e');
+          print('Get devices: $e');
         }
       }
     }
