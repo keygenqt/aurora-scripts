@@ -90,14 +90,14 @@ rm -rf $FOLDER/tarballs/
 
 if [ ! -f "/etc/sudoers.d/mer-sdk-chroot" ]; then
 sudo cat << EOF | sudo tee -a /etc/sudoers.d/mer-sdk-chroot
-$USERNAME ALL=(ALL) NOPASSWD: /home/$USERNAME/AuroraPlatformSDK/sdks/aurora_psdk/mer-sdk-chroot  
-Defaults!/home/$USERNAME/AuroraPlatformSDK/sdks/aurora_psdk/mer-sdk-chroot env_keep += "SSH_AGENT_PID SSH_AUTH_SOCK" 
+$USERNAME ALL=(ALL) NOPASSWD: /home/$USERNAME/AuroraPlatformSDK/sdks/aurora_psdk/mer-sdk-chroot
+Defaults!/home/$USERNAME/AuroraPlatformSDK/sdks/aurora_psdk/mer-sdk-chroot env_keep += "SSH_AGENT_PID SSH_AUTH_SOCK"
 EOF
 fi
 
 if [ ! -f "/etc/sudoers.d/sdk-chroot" ]; then
 sudo cat << EOF | sudo tee -a /etc/sudoers.d/sdk-chroot
-$USERNAME ALL=(ALL) NOPASSWD: /home/$USERNAME/AuroraPlatformSDK/sdks/aurora_psdk/sdk-chroot  
+$USERNAME ALL=(ALL) NOPASSWD: /home/$USERNAME/AuroraPlatformSDK/sdks/aurora_psdk/sdk-chroot
 Defaults!/home/$USERNAME/AuroraPlatformSDK/sdks/aurora_psdk/sdk-chroot env_keep += "SSH_AGENT_PID SSH_AUTH_SOCK"
 EOF
 fi
