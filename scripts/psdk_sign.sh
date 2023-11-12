@@ -1,5 +1,9 @@
 #!/bin/bash
 
+################################################
+## Sign RPM packages directly from the directory
+################################################
+
 ## For snap
 
 if [ ! -z "$SNAP_USER_COMMON" ]; then

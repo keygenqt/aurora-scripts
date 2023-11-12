@@ -1,6 +1,8 @@
 #!/bin/bash
 
+###############################
 ## Remove Flutter for Aurora OS
+###############################
 
 ## For snap
 

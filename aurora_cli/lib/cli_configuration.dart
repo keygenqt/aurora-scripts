@@ -14,10 +14,33 @@ class Configuration {
     if (_data['sign'] != null) {
       final sign = _data['sign'] as YamlMap;
       for (final key in sign.keys) {
-        result[key] = {
-          'key': sign.value[key]['key'],
-          'cert': sign.value[key]['cert'],
-        };
+        try {
+          result[key] = {
+            'key': sign.value[key]['key']!,
+            'cert': sign.value[key]['cert']!,
+          };
+        } catch (e) {
+          print('Get sign: $e');
+        }
+      }
+    }
+    return result;
+  }
+
+  static List<Map<String, String>> devices() {
+    final List<Map<String, String>> result = [];
+
+    if (_data['devices'] != null) {
+      final devices = _data['devices'] as YamlList;
+      for (final device in devices) {
+        try {
+          result.add({
+            'ip': device['ip']!,
+            'pass': device['pass']!,
+          });
+        } catch (e) {
+          print('Get dvices: $e');
+        }
       }
     }
     return result;

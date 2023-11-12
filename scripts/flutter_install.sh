@@ -1,6 +1,8 @@
 #!/bin/bash
 
+#######################################
 ## Install latest Flutter for Aurora OS
+#######################################
 
 ## For snap
 

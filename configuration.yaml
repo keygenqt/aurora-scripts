@@ -10,3 +10,12 @@ sign:
   extended:
     key: /path/to/key.pem
     cert: /path/to/cert.pem
+
+## Devices list
+## devices:
+##  - ip - {device ip wifi or or cable connection}
+##    pass: {password in device for devel-su}
+##  
+devices:
+  - ip: '192.168.2.15'
+    pass: '00000'

@@ -1,6 +1,8 @@
 #!/bin/bash
 
+#############################
 ## Remove PlatformSDK from PC
+#############################
 
 ## For snap
 
