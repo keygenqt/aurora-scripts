@@ -29,4 +29,4 @@ if [ -z "$ip" ]; then
   exit 1
 fi
 
-ssh-copy-id -i $HOME/.ssh/id_rsa.pub defaultuser@"$ip"
+ssh-copy-id defaultuser@"$ip"

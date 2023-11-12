@@ -4,6 +4,12 @@
 ## Execute the command on the device
 ####################################
 
+## For snap
+
+if [ ! -z "$SNAP_USER_COMMON" ]; then
+    HOME=$(cd "$SNAP_USER_COMMON/../../.." && echo $PWD)
+fi
+
 ## Get params keys
 
 while getopts i:c: flag; do
