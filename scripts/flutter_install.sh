@@ -79,5 +79,3 @@ $FLUTTER doctor
 ## Update
 
 bash
-
-
