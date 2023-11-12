@@ -4,6 +4,12 @@
 ## Add ssh key to device
 ########################
 
+## For snap
+
+if [ ! -z "$SNAP_USER_COMMON" ]; then
+    HOME=$(cd "$SNAP_USER_COMMON/../../.." && echo $PWD)
+fi
+
 ## Get params keys
 
 while getopts i: flag; do
@@ -23,4 +29,4 @@ if [ -z "$ip" ]; then
   exit 1
 fi
 
-ssh-copy-id defaultuser@"$ip"
+ssh-copy-id -i $HOME/.ssh/id_rsa.pub defaultuser@"$ip"
