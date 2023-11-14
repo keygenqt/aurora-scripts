@@ -1,14 +1,10 @@
 #!/bin/bash
 
+source $(dirname "$0")/snap_init.sh
+
 ################################
 ## Install 4.0.2.249 PlatformSDK
 ################################
-
-## For snap
-
-if [ ! -z "$SNAP_USER_COMMON" ]; then
-    HOME=$(cd "$SNAP_USER_COMMON/../../.." && echo $PWD)
-fi
 
 ## Variables
 

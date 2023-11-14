@@ -1,14 +1,10 @@
 #!/bin/bash
 
+source $(dirname "$0")/snap_init.sh
+
 #######################################
 ## Install latest Flutter for Aurora OS
 #######################################
-
-## For snap
-
-if [ ! -z "$SNAP_USER_COMMON" ]; then
-    HOME=$(cd "$SNAP_USER_COMMON/../../.." && echo $PWD)
-fi
 
 ## Check psdk
 
