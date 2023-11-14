@@ -14,7 +14,7 @@ while getopts i:p:c: flag; do
   p) port=${OPTARG} ;;
   c) command=${OPTARG} ;;
   *)
-    echo "usage: $0 [-i] [-c]" >&2
+    echo "usage: $0 [-i] [-p] [-c]" >&2
     exit 1
     ;;
   esac

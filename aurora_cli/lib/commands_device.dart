@@ -34,10 +34,10 @@ class CommandsDevice extends Command<int> {
         help: 'Install RPM package in device.',
         negatable: false,
       )
-      ..addFlag(
+      ..addOption(
         'run',
         help: 'Run application in device.',
-        negatable: false,
+        defaultsTo: null,
       );
   }
 
@@ -90,7 +90,8 @@ class CommandsDevice extends Command<int> {
       list.add(CommandsDeviceArg.ssh_copy);
     }
 
-    if (argResults?['command'] != null) {
+    if (argResults?['command'] != null &&
+        argResults!['command'].toString().trim().isNotEmpty) {
       list.add(CommandsDeviceArg.command);
     }
 
@@ -102,7 +103,8 @@ class CommandsDevice extends Command<int> {
       list.add(CommandsDeviceArg.install);
     }
 
-    if (argResults?['run'] == true) {
+    if (argResults?['run'] != null &&
+        argResults!['run'].toString().trim().isNotEmpty) {
       list.add(CommandsDeviceArg.run);
     }
 
@@ -135,13 +137,13 @@ class CommandsDevice extends Command<int> {
           _logger.info(await _command(device));
           break;
         case CommandsDeviceArg.upload:
-          _logger.info(await _ssh_copy(device));
+          // _logger.info(await _ssh_copy(device));
           break;
         case CommandsDeviceArg.install:
-          _logger.info(await _ssh_copy(device));
+          // _logger.info(await _ssh_copy(device));
           break;
         case CommandsDeviceArg.run:
-          _logger.info(await _ssh_copy(device));
+          _logger.info(await _run(device));
           break;
       }
     } else {
@@ -181,6 +183,25 @@ class CommandsDevice extends Command<int> {
         device['port']!,
         '-c',
         argResults?['command'],
+      ],
+    );
+    return result.stderr.toString().isNotEmpty ? result.stderr : result.stdout;
+  }
+
+  Future<String> _run(Map<String, String> device) async {
+    final result = await Process.run(
+      p.join(
+        pathSnap,
+        'scripts',
+        'device_app_run.sh',
+      ),
+      [
+        '-i',
+        device['ip']!,
+        '-p',
+        device['port']!,
+        '-a',
+        argResults?['run'],
       ],
     );
     return result.stderr.toString().isNotEmpty ? result.stderr : result.stdout;
