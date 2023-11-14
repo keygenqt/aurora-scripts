@@ -13,9 +13,11 @@ sign:
 
 ## Devices list
 ## devices:
-##  - ip - {device ip wifi or or cable connection}
+##  - ip: {device ip wifi or or cable connection}
+##    port: {optional ssh port which is used to connect to the device, default 22}
 ##    pass: {password in device for devel-su}
 ##
 devices:
-  - ip: '192.168.2.15'
+  - ip: 192.168.2.15
+    port: 22
     pass: '00000'

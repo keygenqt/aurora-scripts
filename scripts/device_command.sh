@@ -12,9 +12,10 @@ fi
 
 ## Get params keys
 
-while getopts i:c: flag; do
+while getopts i:p:c: flag; do
   case "${flag}" in
   i) ip=${OPTARG} ;;
+  p) port=${OPTARG} ;;
   c) command=${OPTARG} ;;
   *)
     echo "usage: $0 [-i] [-c]" >&2
@@ -25,9 +26,9 @@ done
 
 ## Check params keys
 
-if [ -z "$ip" ] ||  [ -z "$command" ]; then
-  echo "Specify ip device and command!"
+if [ -z "$ip" ] || [ -z "$port" ] ||  [ -z "$command" ]; then
+  echo "Specify device ip, port and command!"
   exit 1
 fi
 
-ssh defaultuser@"$ip" "$command"
+ssh -p "$port" defaultuser@"$ip" "$command"
