@@ -27,4 +27,4 @@ if [ -z "$ip" ] || [ -z "$port" ] ||  [ -z "$command" ]; then
   exit 1
 fi
 
-ssh -p "$port" defaultuser@"$ip" "$command"
+ssh -p "$port" "defaultuser@$ip" "$command"

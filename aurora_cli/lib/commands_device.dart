@@ -24,15 +24,15 @@ class CommandsDevice extends Command<int> {
         help: 'Execute the command on the device.',
         defaultsTo: null,
       )
-      ..addFlag(
+      ..addOption(
         'upload',
         help: 'Upload file to Download directory device.',
-        negatable: false,
+        defaultsTo: null,
       )
-      ..addFlag(
+      ..addOption(
         'install',
         help: 'Install RPM package in device.',
-        negatable: false,
+        defaultsTo: null,
       )
       ..addOption(
         'run',
@@ -95,11 +95,13 @@ class CommandsDevice extends Command<int> {
       list.add(CommandsDeviceArg.command);
     }
 
-    if (argResults?['upload'] == true) {
+    if (argResults?['upload'] != null &&
+        argResults!['upload'].toString().trim().isNotEmpty) {
       list.add(CommandsDeviceArg.upload);
     }
 
-    if (argResults?['install'] == true) {
+    if (argResults?['install'] != null &&
+        argResults!['install'].toString().trim().isNotEmpty) {
       list.add(CommandsDeviceArg.install);
     }
 
@@ -137,10 +139,10 @@ class CommandsDevice extends Command<int> {
           _logger.info(await _command(device));
           break;
         case CommandsDeviceArg.upload:
-          // _logger.info(await _ssh_copy(device));
+          _logger.info(await _upload(device));
           break;
         case CommandsDeviceArg.install:
-          // _logger.info(await _ssh_copy(device));
+          _logger.info(await _install(device));
           break;
         case CommandsDeviceArg.run:
           _logger.info(await _run(device));
@@ -163,7 +165,7 @@ class CommandsDevice extends Command<int> {
         '-i',
         device['ip']!,
         '-p',
-        device['port']!,
+        device['port'] ?? '22',
       ],
     );
     return result.stderr.toString().isNotEmpty ? result.stderr : result.stdout;
@@ -180,7 +182,7 @@ class CommandsDevice extends Command<int> {
         '-i',
         device['ip']!,
         '-p',
-        device['port']!,
+        device['port'] ?? '22',
         '-c',
         argResults?['command'],
       ],
@@ -199,9 +201,49 @@ class CommandsDevice extends Command<int> {
         '-i',
         device['ip']!,
         '-p',
-        device['port']!,
+        device['port'] ?? '22',
         '-a',
         argResults?['run'],
+      ],
+    );
+    return result.stderr.toString().isNotEmpty ? result.stderr : result.stdout;
+  }
+
+  Future<String> _upload(Map<String, String> device) async {
+    final result = await Process.run(
+      p.join(
+        pathSnap,
+        'scripts',
+        'device_upload.sh',
+      ),
+      [
+        '-i',
+        device['ip']!,
+        '-p',
+        device['port'] ?? '22',
+        '-u',
+        argResults!['upload'].toString(),
+      ],
+    );
+    return result.stderr.toString().isNotEmpty ? result.stderr : result.stdout;
+  }
+
+  Future<String> _install(Map<String, String> device) async {
+    final result = await Process.run(
+      p.join(
+        pathSnap,
+        'scripts',
+        'device_install.sh',
+      ),
+      [
+        '-i',
+        device['ip']!,
+        '-p',
+        device['port'] ?? '22',
+        '-r',
+        argResults!['install'].toString(),
+        '-s',
+        device['pass']!,
       ],
     );
     return result.stderr.toString().isNotEmpty ? result.stderr : result.stdout;

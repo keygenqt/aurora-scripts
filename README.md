@@ -14,12 +14,6 @@ An application that combines different scripts that help an Aurora OS programmer
 sudo snap install aurora-cli --devmode
 ```
 
-or candidate
-
-```
-sudo snap install aurora-cli --channel=candidate --devmode
-```
-
 ## Features
 
 * psdk
@@ -29,7 +23,12 @@ sudo snap install aurora-cli --channel=candidate --devmode
 * flutter
   - install - Install latest Flutter SDK for Aurora OS.
   - remove - Remove Flutter SDK.
-
+* device
+  - ssh-copy - Add ssh key to device.
+  - command - Execute the command on the device.
+  - upload - Upload files to Download directory device.
+  - install - Install RPM package in device.
+  - run - Run application in device.
 
 ### License
 
