@@ -53,7 +53,7 @@ fi
 ## Aurora Platform SDK requires superuser rights
 
 if ! [ -f "/etc/sudoers.d/mer-sdk-chroot" ]; then
-  sudo echo
+  sudo echo ''
 else
   echo
 fi

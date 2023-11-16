@@ -44,10 +44,10 @@ class CommandsDevice extends Command<int> {
         help: 'Run application in device with firejail in container.',
         defaultsTo: null,
       )
-      ..addFlag(
-        'default',
-        help: 'Select default device.',
-        negatable: false,
+      ..addOption(
+        'index',
+        help: 'Select index.',
+        defaultsTo: null,
       );
   }
 
@@ -69,12 +69,17 @@ class CommandsDevice extends Command<int> {
       return null;
     }
 
-    if (argResults?['default'] == true) {
-      for (final device in devices) {
-        if (device['default'] == true) {
-          return device;
-        }
-      }
+    final index = (int.tryParse(argResults?['index'] ?? '') ?? 0) - 1;
+
+    if (argResults?['index'] != null &&
+        (index < 0 || index >= devices.length)) {
+      _logger.info('You specified the wrong index!');
+      return null;
+    }
+
+    if (index >= 0 && index < devices.length) {
+      _logger.info('');
+      return devices[index];
     }
 
     _logger

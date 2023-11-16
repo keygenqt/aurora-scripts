@@ -29,10 +29,10 @@ class CommandsPsdk extends Command<int> {
         negatable: false,
         help: 'Remove Aurora Platform SDK.',
       )
-      ..addFlag(
-        'default',
-        help: 'Auto select default key.',
-        negatable: false,
+      ..addOption(
+        'index',
+        help: 'Select index.',
+        defaultsTo: null,
       );
   }
 
@@ -54,12 +54,15 @@ class CommandsPsdk extends Command<int> {
       return null;
     }
 
-    if (argResults?['default'] == true) {
-      for (final device in keys) {
-        if (device['default'] == true) {
-          return device;
-        }
-      }
+    final index = (int.tryParse(argResults?['index'] ?? '') ?? 0) - 1;
+
+    if (argResults?['index'] != null && (index < 0 || index >= keys.length)) {
+      _logger.info('You specified the wrong index!');
+      return null;
+    }
+
+    if (index >= 0 && index < keys.length) {
+      return keys[index];
     }
 
     _logger
