@@ -2,9 +2,9 @@
 
 source $(dirname "$0")/snap_init.sh
 
-################################
-## Run application on the device
-################################
+#############################################
+## Run application on the device in container
+#############################################
 
 ## Get params keys
 
@@ -27,6 +27,6 @@ if [ -z "$ip" ] || [ -z "$port" ] ||  [ -z "$application" ]; then
   exit 1
 fi
 
-## Run app
+## Run app in container
 
-ssh -p "$port" defaultuser@"$ip" "/usr/bin/$application"
+ssh -p "$port" defaultuser@"$ip" "invoker --type=qt5 $application"

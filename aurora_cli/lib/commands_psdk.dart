@@ -16,8 +16,7 @@ class CommandsPsdk extends Command<int> {
     argParser
       ..addOption(
         'sign',
-        help: 'Sign RPM packages directly from the directory.',
-        valueHelp: 'extended|regular|system',
+        help: 'Sign ( with re-sign) packages.',
         defaultsTo: null,
       )
       ..addFlag(
@@ -29,6 +28,11 @@ class CommandsPsdk extends Command<int> {
         'remove',
         negatable: false,
         help: 'Remove Aurora Platform SDK.',
+      )
+      ..addFlag(
+        'default',
+        help: 'Auto select default key.',
+        negatable: false,
       );
   }
 
@@ -39,6 +43,48 @@ class CommandsPsdk extends Command<int> {
   String get name => 'psdk';
 
   Logger get _logger => getIt<Logger>();
+
+  Map<String, dynamic>? _getKey() {
+    final keys = Configuration.keys();
+
+    if (keys.isEmpty) {
+      _logger.info('Not a single key was found!');
+      _logger.info(
+          'Check configuration file: ${pathUserCommon}/configuration.yaml');
+      return null;
+    }
+
+    if (argResults?['default'] == true) {
+      for (final device in keys) {
+        if (device['default'] == true) {
+          return device;
+        }
+      }
+    }
+
+    _logger
+      ..info('Keys that do this were found:')
+      ..info('');
+
+    for (final (index, key) in keys.indexed) {
+      _logger.info('${index + 1}. Name: ${key['name']}');
+    }
+
+    _logger
+      ..info('')
+      ..info('Enter the index of the key:');
+
+    final input = (int.tryParse(stdin.readLineSync() ?? '') ?? 0) - 1;
+
+    _logger.info('');
+
+    if (input >= 0 && input < keys.length) {
+      return keys[input];
+    } else {
+      _logger.info('You specified the wrong index!');
+      return null;
+    }
+  }
 
   CommandsPsdkArg? _getArg(ArgResults? args) {
     final list = [];
@@ -52,16 +98,7 @@ class CommandsPsdk extends Command<int> {
     }
 
     if (argResults?['sign'] != null) {
-      switch (argResults?['sign']) {
-        case 'extended':
-        case 'regular':
-        case 'system':
-          list.add(CommandsPsdkArg.sign);
-          break;
-        default:
-          _logger.info('Sign keys: extended, regular, system!');
-          return null;
-      }
+      list.add(CommandsPsdkArg.sign);
     }
 
     if (list.length > 1) {
@@ -78,17 +115,13 @@ class CommandsPsdk extends Command<int> {
   Future<int> run() async {
     switch (_getArg(argResults)) {
       case CommandsPsdkArg.sign:
-        final keys = Configuration.sign()[argResults?['sign']];
-        if (keys == null) {
-          _logger.info('This key is not added to the configuration!');
-          _logger.info(
-              'Check configuration file: ${pathUserCommon}/configuration.yaml');
+        final key = _getKey();
+        if (key == null) {
           return ExitCode.usage.code;
-        } else {
-          _logger
-            ..info(await _sign(keys))
-            ..detail('Show verbose sign');
         }
+        _logger
+          ..info(await _sign(key))
+          ..detail('Show verbose sign');
         break;
       case CommandsPsdkArg.install:
         _logger.info(await _install());
@@ -102,7 +135,7 @@ class CommandsPsdk extends Command<int> {
     return ExitCode.success.code;
   }
 
-  Future<String> _sign(Map<String, String> keys) async {
+  Future<String> _sign(Map<String, dynamic> key) async {
     final result = await Process.run(
       p.join(
         pathSnap,
@@ -111,9 +144,11 @@ class CommandsPsdk extends Command<int> {
       ),
       [
         '-k',
-        keys['key']!,
+        key['key']!,
         '-c',
-        keys['cert']!,
+        key['cert']!,
+        '-p',
+        argResults!['sign'].toString(),
       ],
     );
     return result.stderr.toString().isNotEmpty ? result.stderr : result.stdout;

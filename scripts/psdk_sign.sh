@@ -16,10 +16,11 @@ fi
 
 ## Get params keys
 
-while getopts k:c: flag; do
+while getopts k:c:p: flag; do
   case "${flag}" in
   k) key=${OPTARG} ;;
   c) cert=${OPTARG} ;;
+  p) path=${OPTARG} ;;
   *)
     echo "usage: $0 [-k] [-c]" >&2
     exit 1
@@ -34,17 +35,19 @@ if [ -z "$key" ] || ! [ -f "$key" ] || [ -z "$cert" ] || ! [ -f "$cert" ]; then
   exit 1
 fi
 
-## Get list rmp
+## Path to array
 
-RPMS=$(ls "$PWD" | grep -i .rpm | tr '\n' ';');
+readarray -t files <<< $path
 
-## List to array
+if [[ $path == *"*"* ]]; then
+  files=($path)
+fi
 
-IFS=';' read -r -a array <<< "$RPMS"
+## Check size files
 
-if [ -z "$array" ]; then
-  echo "Not found RPM packeges. Go to the folder where there are rpm packages."
-  exit 0
+if [ ${#files[@]} == 0 ]; then
+    echo "No files found";
+    exit
 fi
 
 ## Aurora Platform SDK requires superuser rights
@@ -57,13 +60,13 @@ fi
 
 ## Sign array
 
-for file in "${array[@]}"
+for file in "${files[@]}"
 do
   ## Remove sign if exist
-  $PSDK_DIR/sdk-chroot rpmsign-external delete "$PWD/$file" > /dev/null 2>&1
+  $PSDK_DIR/sdk-chroot rpmsign-external delete "$file" > /dev/null 2>&1
 
   ## Sign
-  RESULT=$($PSDK_DIR/sdk-chroot rpmsign-external sign --key "$key" --cert "$cert" "$PWD/$file" 2>&1)
+  RESULT=$($PSDK_DIR/sdk-chroot rpmsign-external sign --key "$key" --cert "$cert" "$file" 2>&1)
 
   ## Check result
   if [[ $RESULT == *"Signed"* ]]; then

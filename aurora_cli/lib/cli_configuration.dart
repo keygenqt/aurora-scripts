@@ -9,26 +9,29 @@ class Configuration {
           pathToSettings: p.join(pathUserCommon, 'configuration.yaml'))
       .valueMap;
 
-  static Map<String, Map<String, String>> sign() {
-    final Map<String, Map<String, String>> result = {};
-    if (_data['sign'] != null) {
-      final sign = _data['sign'] as YamlMap;
-      for (final key in sign.keys) {
+  static List<Map<String, dynamic>> keys() {
+    final List<Map<String, dynamic>> result = [];
+
+    if (_data['keys'] != null) {
+      final devices = _data['keys'] as YamlList;
+      for (final device in devices) {
         try {
-          result[key] = {
-            'key': sign.value[key]['key']!,
-            'cert': sign.value[key]['cert']!,
-          };
+          result.add({
+            'name': device['name']!,
+            'key': device['key']!,
+            'cert': device['cert']!,
+            'default': device['default'] == true,
+          });
         } catch (e) {
-          print('Get sign: $e');
+          print('Get key: $e');
         }
       }
     }
     return result;
   }
 
-  static List<Map<String, String>> devices() {
-    final List<Map<String, String>> result = [];
+  static List<Map<String, dynamic>> devices() {
+    final List<Map<String, dynamic>> result = [];
 
     if (_data['devices'] != null) {
       final devices = _data['devices'] as YamlList;
@@ -38,6 +41,7 @@ class Configuration {
             'ip': device['ip']!,
             'port': (device['port'] ?? 22).toString(),
             'pass': device['pass']!,
+            'default': device['default'] == true,
           });
         } catch (e) {
           print('Get devices: $e');

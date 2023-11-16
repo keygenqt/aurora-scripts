@@ -1,23 +1,26 @@
 ## Application configuration file aurora-cli
-## Version: 0.0.2
+## Version: 0.0.3
 
 ## Path to sign keys
-## sign:
-##  {type} - extended | regular | system
-##    key: {path to pem file}
+## keys:
+##  - key: {path to pem file}
 ##    cert: {path to pem file}
-sign:
-  extended:
+##    default: {use key like default - true or false, default false}
+keys:
+  - name: regular
     key: /path/to/key.pem
     cert: /path/to/cert.pem
+    default: true
 
 ## Devices list
 ## devices:
 ##  - ip: {device ip wifi or or cable connection}
 ##    port: {optional ssh port which is used to connect to the device, default 22}
 ##    pass: {password in device for devel-su}
+##    default: {use device like default - true or false, default false}
 ##
 devices:
   - ip: 192.168.2.15
     port: 22
     pass: '00000'
+    default: true

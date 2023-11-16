@@ -19,7 +19,8 @@ sudo snap install aurora-cli --devmode
 * psdk
   - install - Install Aurora Platform SDK version 4.0.2.249.
   - remove - Remove Aurora Platform SDK.
-  - sign - Helps to sign (re-sign) packages located in a folder.
+  - sign - Sign ( with re-sign) packages.
+  - default - Auto select default key.
 * flutter
   - install - Install latest Flutter SDK for Aurora OS.
   - remove - Remove Flutter SDK.
@@ -29,6 +30,8 @@ sudo snap install aurora-cli --devmode
   - upload - Upload files to Download directory device.
   - install - Install RPM package in device.
   - run - Run application in device.
+  - firejail - Run application in device with firejail in container.
+  - default - Auto select default device.
 
 ### License
 

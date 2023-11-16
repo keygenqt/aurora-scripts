@@ -9,7 +9,7 @@ import 'package:mason_logger/mason_logger.dart';
 
 import 'package:path/path.dart' as p;
 
-enum CommandsDeviceArg { ssh_copy, command, upload, install, run }
+enum CommandsDeviceArg { ssh_copy, command, upload, install, run, firejail }
 
 class CommandsDevice extends Command<int> {
   CommandsDevice() {
@@ -38,6 +38,16 @@ class CommandsDevice extends Command<int> {
         'run',
         help: 'Run application in device.',
         defaultsTo: null,
+      )
+      ..addOption(
+        'firejail',
+        help: 'Run application in device with firejail in container.',
+        defaultsTo: null,
+      )
+      ..addFlag(
+        'default',
+        help: 'Select default device.',
+        negatable: false,
       );
   }
 
@@ -49,7 +59,7 @@ class CommandsDevice extends Command<int> {
 
   Logger get _logger => getIt<Logger>();
 
-  Map<String, String>? _getDevice() {
+  Map<String, dynamic>? _getDevice() {
     final devices = Configuration.devices();
 
     if (devices.isEmpty) {
@@ -57,6 +67,14 @@ class CommandsDevice extends Command<int> {
       _logger.info(
           'Check configuration file: ${pathUserCommon}/configuration.yaml');
       return null;
+    }
+
+    if (argResults?['default'] == true) {
+      for (final device in devices) {
+        if (device['default'] == true) {
+          return device;
+        }
+      }
     }
 
     _logger
@@ -110,6 +128,11 @@ class CommandsDevice extends Command<int> {
       list.add(CommandsDeviceArg.run);
     }
 
+    if (argResults?['firejail'] != null &&
+        argResults!['firejail'].toString().trim().isNotEmpty) {
+      list.add(CommandsDeviceArg.firejail);
+    }
+
     if (list.length > 1) {
       _logger.info('Only one flag at a time!');
       list.clear();
@@ -147,6 +170,9 @@ class CommandsDevice extends Command<int> {
         case CommandsDeviceArg.run:
           _logger.info(await _run(device));
           break;
+        case CommandsDeviceArg.firejail:
+          _logger.info(await _firejail(device));
+          break;
       }
     } else {
       return ExitCode.usage.code;
@@ -154,7 +180,7 @@ class CommandsDevice extends Command<int> {
     return ExitCode.success.code;
   }
 
-  Future<String> _ssh_copy(Map<String, String> device) async {
+  Future<String> _ssh_copy(Map<String, dynamic> device) async {
     final result = await Process.run(
       p.join(
         pathSnap,
@@ -165,13 +191,13 @@ class CommandsDevice extends Command<int> {
         '-i',
         device['ip']!,
         '-p',
-        device['port'] ?? '22',
+        device['port']!,
       ],
     );
     return result.stderr.toString().isNotEmpty ? result.stderr : result.stdout;
   }
 
-  Future<String> _command(Map<String, String> device) async {
+  Future<String> _command(Map<String, dynamic> device) async {
     final result = await Process.run(
       p.join(
         pathSnap,
@@ -182,7 +208,7 @@ class CommandsDevice extends Command<int> {
         '-i',
         device['ip']!,
         '-p',
-        device['port'] ?? '22',
+        device['port']!,
         '-c',
         argResults?['command'],
       ],
@@ -190,26 +216,7 @@ class CommandsDevice extends Command<int> {
     return result.stderr.toString().isNotEmpty ? result.stderr : result.stdout;
   }
 
-  Future<String> _run(Map<String, String> device) async {
-    final result = await Process.run(
-      p.join(
-        pathSnap,
-        'scripts',
-        'device_app_run.sh',
-      ),
-      [
-        '-i',
-        device['ip']!,
-        '-p',
-        device['port'] ?? '22',
-        '-a',
-        argResults?['run'],
-      ],
-    );
-    return result.stderr.toString().isNotEmpty ? result.stderr : result.stdout;
-  }
-
-  Future<String> _upload(Map<String, String> device) async {
+  Future<String> _upload(Map<String, dynamic> device) async {
     final result = await Process.run(
       p.join(
         pathSnap,
@@ -220,7 +227,7 @@ class CommandsDevice extends Command<int> {
         '-i',
         device['ip']!,
         '-p',
-        device['port'] ?? '22',
+        device['port']!,
         '-u',
         argResults!['upload'].toString(),
       ],
@@ -228,7 +235,7 @@ class CommandsDevice extends Command<int> {
     return result.stderr.toString().isNotEmpty ? result.stderr : result.stdout;
   }
 
-  Future<String> _install(Map<String, String> device) async {
+  Future<String> _install(Map<String, dynamic> device) async {
     final result = await Process.run(
       p.join(
         pathSnap,
@@ -239,11 +246,49 @@ class CommandsDevice extends Command<int> {
         '-i',
         device['ip']!,
         '-p',
-        device['port'] ?? '22',
+        device['port']!,
         '-r',
         argResults!['install'].toString(),
         '-s',
         device['pass']!,
+      ],
+    );
+    return result.stderr.toString().isNotEmpty ? result.stderr : result.stdout;
+  }
+
+  Future<String> _run(Map<String, dynamic> device) async {
+    final result = await Process.run(
+      p.join(
+        pathSnap,
+        'scripts',
+        'device_app_run.sh',
+      ),
+      [
+        '-i',
+        device['ip']!,
+        '-p',
+        device['port']!,
+        '-a',
+        argResults?['run'],
+      ],
+    );
+    return result.stderr.toString().isNotEmpty ? result.stderr : result.stdout;
+  }
+
+  Future<String> _firejail(Map<String, dynamic> device) async {
+    final result = await Process.run(
+      p.join(
+        pathSnap,
+        'scripts',
+        'device_app_run_firejail.sh',
+      ),
+      [
+        '-i',
+        device['ip']!,
+        '-p',
+        device['port']!,
+        '-a',
+        argResults?['firejail'],
       ],
     );
     return result.stderr.toString().isNotEmpty ? result.stderr : result.stdout;
