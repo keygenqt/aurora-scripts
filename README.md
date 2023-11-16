@@ -19,7 +19,7 @@ sudo snap install aurora-cli --devmode
 * psdk
   - install - Install Aurora Platform SDK version 4.0.2.249.
   - remove - Remove Aurora Platform SDK.
-  - sign - Sign ( with re-sign) packages.
+  - sign - Sign (with re-sign) packages.
   - index - Select index key.
 * flutter
   - install - Install latest Flutter SDK for Aurora OS.
