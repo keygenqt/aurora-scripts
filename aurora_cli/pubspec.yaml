@@ -8,6 +8,10 @@ environment:
 
 # Add regular dependencies here.
 dependencies:
+  # https://pub.dev/packages/async
+  # Parses raw command-line arguments into a set of options and values.
+  async: ^2.11.0
+
   # https://pub.dev/packages/args
   # Parses raw command-line arguments into a set of options and values.
   args: ^2.4.2
@@ -28,4 +32,3 @@ dependencies:
   # https://pub.dev/packages/settings_yaml
   # Provide a very simple method to use yaml files for reading/writing an app's configuration.
   settings_yaml: ^7.1.0
-  

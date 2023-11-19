@@ -8,6 +8,7 @@ import 'package:aurora_cli/cli_di.dart';
 import 'package:mason_logger/mason_logger.dart';
 
 import 'package:path/path.dart' as p;
+import 'package:async/async.dart' show StreamGroup;
 
 enum CommandsDeviceArg { ssh_copy, command, upload, install, run, firejail }
 
@@ -199,7 +200,10 @@ class CommandsDevice extends Command<int> {
         device['port']!,
       ],
     );
-    await stdout.addStream(process.stdout);
+    await stdout.addStream(StreamGroup.merge([
+      process.stdout,
+      process.stderr,
+    ]));
   }
 
   Future<void> _command(Map<String, dynamic> device) async {
@@ -218,7 +222,10 @@ class CommandsDevice extends Command<int> {
         argResults?['command'],
       ],
     );
-    await stdout.addStream(process.stdout);
+    await stdout.addStream(StreamGroup.merge([
+      process.stdout,
+      process.stderr,
+    ]));
   }
 
   Future<void> _upload(Map<String, dynamic> device) async {
@@ -237,7 +244,10 @@ class CommandsDevice extends Command<int> {
         argResults!['upload'].toString(),
       ],
     );
-    await stdout.addStream(process.stdout);
+    await stdout.addStream(StreamGroup.merge([
+      process.stdout,
+      process.stderr,
+    ]));
   }
 
   Future<void> _install(Map<String, dynamic> device) async {
@@ -258,7 +268,10 @@ class CommandsDevice extends Command<int> {
         device['pass']!,
       ],
     );
-    await stdout.addStream(process.stdout);
+    await stdout.addStream(StreamGroup.merge([
+      process.stdout,
+      process.stderr,
+    ]));
   }
 
   Future<void> _run(Map<String, dynamic> device) async {
@@ -277,7 +290,10 @@ class CommandsDevice extends Command<int> {
         argResults?['run'],
       ],
     );
-    await stdout.addStream(process.stdout);
+    await stdout.addStream(StreamGroup.merge([
+      process.stdout,
+      process.stderr,
+    ]));
   }
 
   Future<void> _firejail(Map<String, dynamic> device) async {
@@ -296,6 +312,9 @@ class CommandsDevice extends Command<int> {
         argResults?['firejail'],
       ],
     );
-    await stdout.addStream(process.stdout);
+    await stdout.addStream(StreamGroup.merge([
+      process.stdout,
+      process.stderr,
+    ]));
   }
 }

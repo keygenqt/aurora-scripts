@@ -8,6 +8,7 @@ import 'package:aurora_cli/cli_di.dart';
 import 'package:mason_logger/mason_logger.dart';
 
 import 'package:path/path.dart' as p;
+import 'package:async/async.dart' show StreamGroup;
 
 enum CommandsPsdkArg { sign, install, remove }
 
@@ -152,7 +153,10 @@ class CommandsPsdk extends Command<int> {
         argResults!['sign'].toString(),
       ],
     );
-    await stdout.addStream(process.stdout);
+    await stdout.addStream(StreamGroup.merge([
+      process.stdout,
+      process.stderr,
+    ]));
   }
 
   Future<void> _install() async {
@@ -168,8 +172,10 @@ class CommandsPsdk extends Command<int> {
       ),
       [],
     );
-
-    await stdout.addStream(process.stdout);
+    await stdout.addStream(StreamGroup.merge([
+      process.stdout,
+      process.stderr,
+    ]));
   }
 
   Future<void> _remove() async {
@@ -181,6 +187,9 @@ class CommandsPsdk extends Command<int> {
       ),
       [],
     );
-    await stdout.addStream(process.stdout);
+    await stdout.addStream(StreamGroup.merge([
+      process.stdout,
+      process.stderr,
+    ]));
   }
 }
