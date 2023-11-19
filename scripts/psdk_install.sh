@@ -36,10 +36,10 @@ mkdir -pv $HOME/AuroraPlatformSDK/sdks/aurora_psdk
 
 ## Download
 
-curl "$URL_CHROOT" --output $FOLDER/tarballs/chroot.tar.bz2
-curl "$URL_TOOLING" --output $FOLDER/tarballs/tooling.tar.bz2
-curl "$URL_TARGET_armv7hl" --output $FOLDER/tarballs/target_armv7hl.tar.bz2
-curl "$URL_TARGET_i486" --output $FOLDER/tarballs/target_i486.tar.bz2
+curl "$URL_CHROOT" --output $FOLDER/tarballs/chroot.tar.bz2 &> /dev/stdout
+curl "$URL_TOOLING" --output $FOLDER/tarballs/tooling.tar.bz2 &> /dev/stdout
+curl "$URL_TARGET_armv7hl" --output $FOLDER/tarballs/target_armv7hl.tar.bz2 &> /dev/stdout
+curl "$URL_TARGET_i486" --output $FOLDER/tarballs/target_i486.tar.bz2 &> /dev/stdout
 
 ## Install Platform SDK
 

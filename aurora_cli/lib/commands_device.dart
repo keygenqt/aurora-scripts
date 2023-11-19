@@ -161,22 +161,22 @@ class CommandsDevice extends Command<int> {
 
       switch (arg) {
         case CommandsDeviceArg.ssh_copy:
-          _logger.info(await _ssh_copy(device));
+          await _ssh_copy(device);
           break;
         case CommandsDeviceArg.command:
-          _logger.info(await _command(device));
+          await _command(device);
           break;
         case CommandsDeviceArg.upload:
-          _logger.info(await _upload(device));
+          await _upload(device);
           break;
         case CommandsDeviceArg.install:
-          _logger.info(await _install(device));
+          await _install(device);
           break;
         case CommandsDeviceArg.run:
-          _logger.info(await _run(device));
+          await _run(device);
           break;
         case CommandsDeviceArg.firejail:
-          _logger.info(await _firejail(device));
+          await _firejail(device);
           break;
       }
     } else {
@@ -185,8 +185,8 @@ class CommandsDevice extends Command<int> {
     return ExitCode.success.code;
   }
 
-  Future<String> _ssh_copy(Map<String, dynamic> device) async {
-    final result = await Process.run(
+  Future<void> _ssh_copy(Map<String, dynamic> device) async {
+    final process = await Process.start(
       p.join(
         pathSnap,
         'scripts',
@@ -199,11 +199,11 @@ class CommandsDevice extends Command<int> {
         device['port']!,
       ],
     );
-    return result.stderr.toString().isNotEmpty ? result.stderr : result.stdout;
+    await stdout.addStream(process.stdout);
   }
 
-  Future<String> _command(Map<String, dynamic> device) async {
-    final result = await Process.run(
+  Future<void> _command(Map<String, dynamic> device) async {
+    final process = await Process.start(
       p.join(
         pathSnap,
         'scripts',
@@ -218,11 +218,11 @@ class CommandsDevice extends Command<int> {
         argResults?['command'],
       ],
     );
-    return result.stderr.toString().isNotEmpty ? result.stderr : result.stdout;
+    await stdout.addStream(process.stdout);
   }
 
-  Future<String> _upload(Map<String, dynamic> device) async {
-    final result = await Process.run(
+  Future<void> _upload(Map<String, dynamic> device) async {
+    final process = await Process.start(
       p.join(
         pathSnap,
         'scripts',
@@ -237,11 +237,11 @@ class CommandsDevice extends Command<int> {
         argResults!['upload'].toString(),
       ],
     );
-    return result.stderr.toString().isNotEmpty ? result.stderr : result.stdout;
+    await stdout.addStream(process.stdout);
   }
 
-  Future<String> _install(Map<String, dynamic> device) async {
-    final result = await Process.run(
+  Future<void> _install(Map<String, dynamic> device) async {
+    final process = await Process.start(
       p.join(
         pathSnap,
         'scripts',
@@ -258,11 +258,11 @@ class CommandsDevice extends Command<int> {
         device['pass']!,
       ],
     );
-    return result.stderr.toString().isNotEmpty ? result.stderr : result.stdout;
+    await stdout.addStream(process.stdout);
   }
 
-  Future<String> _run(Map<String, dynamic> device) async {
-    final result = await Process.run(
+  Future<void> _run(Map<String, dynamic> device) async {
+    final process = await Process.start(
       p.join(
         pathSnap,
         'scripts',
@@ -277,11 +277,11 @@ class CommandsDevice extends Command<int> {
         argResults?['run'],
       ],
     );
-    return result.stderr.toString().isNotEmpty ? result.stderr : result.stdout;
+    await stdout.addStream(process.stdout);
   }
 
-  Future<String> _firejail(Map<String, dynamic> device) async {
-    final result = await Process.run(
+  Future<void> _firejail(Map<String, dynamic> device) async {
+    final process = await Process.start(
       p.join(
         pathSnap,
         'scripts',
@@ -296,6 +296,6 @@ class CommandsDevice extends Command<int> {
         argResults?['firejail'],
       ],
     );
-    return result.stderr.toString().isNotEmpty ? result.stderr : result.stdout;
+    await stdout.addStream(process.stdout);
   }
 }

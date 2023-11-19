@@ -3,7 +3,8 @@
 
 ## Path to sign keys
 ## keys:
-##  - key: {path to pem file}
+##  - name: {just name key}
+##    key: {path to pem file}
 ##    cert: {path to pem file}
 ##
 keys:

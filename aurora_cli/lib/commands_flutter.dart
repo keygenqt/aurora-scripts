@@ -58,10 +58,10 @@ class CommandsFlutter extends Command<int> {
   Future<int> run() async {
     switch (_getArg(argResults)) {
       case CommandsFlutterArg.install:
-        _logger.info(await _install());
+        await _install();
         break;
       case CommandsFlutterArg.remove:
-        _logger.info(await _remove());
+        await _remove();
         break;
       default:
         return ExitCode.usage.code;
@@ -69,11 +69,11 @@ class CommandsFlutter extends Command<int> {
     return ExitCode.success.code;
   }
 
-  Future<String> _install() async {
+  Future<void> _install() async {
     _logger
       ..info('The installation has started, please wait...')
       ..info('');
-    final result = await Process.run(
+    final process = await Process.start(
       p.join(
         pathSnap,
         'scripts',
@@ -81,11 +81,11 @@ class CommandsFlutter extends Command<int> {
       ),
       [],
     );
-    return result.stderr.toString().isNotEmpty ? result.stderr : result.stdout;
+    await stdout.addStream(process.stdout);
   }
 
-  Future<String> _remove() async {
-    final result = await Process.run(
+  Future<void> _remove() async {
+    final process = await Process.start(
       p.join(
         pathSnap,
         'scripts',
@@ -93,6 +93,6 @@ class CommandsFlutter extends Command<int> {
       ),
       [],
     );
-    return result.stderr.toString().isNotEmpty ? result.stderr : result.stdout;
+    await stdout.addStream(process.stdout);
   }
 }

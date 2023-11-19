@@ -122,15 +122,13 @@ class CommandsPsdk extends Command<int> {
         if (key == null) {
           return ExitCode.usage.code;
         }
-        _logger
-          ..info(await _sign(key))
-          ..detail('Show verbose sign');
+        await _sign(key);
         break;
       case CommandsPsdkArg.install:
-        _logger.info(await _install());
+        await _install();
         break;
       case CommandsPsdkArg.remove:
-        _logger.info(await _remove());
+        await _remove();
         break;
       default:
         return ExitCode.usage.code;
@@ -138,8 +136,8 @@ class CommandsPsdk extends Command<int> {
     return ExitCode.success.code;
   }
 
-  Future<String> _sign(Map<String, dynamic> key) async {
-    final result = await Process.run(
+  Future<void> _sign(Map<String, dynamic> key) async {
+    final process = await Process.start(
       p.join(
         pathSnap,
         'scripts',
@@ -154,15 +152,15 @@ class CommandsPsdk extends Command<int> {
         argResults!['sign'].toString(),
       ],
     );
-    return result.stderr.toString().isNotEmpty ? result.stderr : result.stdout;
+    await stdout.addStream(process.stdout);
   }
 
-  Future<String> _install() async {
+  Future<void> _install() async {
     _logger
       ..info('The installation has started, please wait.')
       ..info("It's not very fast, sometimes data doesn't download quickly...")
       ..info('');
-    final result = await Process.run(
+    final process = await Process.start(
       p.join(
         pathSnap,
         'scripts',
@@ -170,11 +168,12 @@ class CommandsPsdk extends Command<int> {
       ),
       [],
     );
-    return result.stderr.toString().isNotEmpty ? result.stderr : result.stdout;
+
+    await stdout.addStream(process.stdout);
   }
 
-  Future<String> _remove() async {
-    final result = await Process.run(
+  Future<void> _remove() async {
+    final process = await Process.start(
       p.join(
         pathSnap,
         'scripts',
@@ -182,6 +181,6 @@ class CommandsPsdk extends Command<int> {
       ),
       [],
     );
-    return result.stderr.toString().isNotEmpty ? result.stderr : result.stdout;
+    await stdout.addStream(process.stdout);
   }
 }

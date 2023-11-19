@@ -31,7 +31,7 @@ done
 ## Check params keys
 
 if [ -z "$key" ] || ! [ -f "$key" ] || [ -z "$cert" ] || ! [ -f "$cert" ]; then
-  echo "Specify paths to existing files!"
+  echo "Specify paths to existing key and cert files!"
   exit 1
 fi
 

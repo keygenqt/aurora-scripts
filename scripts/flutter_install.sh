@@ -36,7 +36,7 @@ fi
 
 ## Download
 
-curl -s "$GIT_URL" --output $FOLDER/flutter-master.tar.gz
+curl -s "$GIT_URL" --output $FOLDER/flutter-master.tar.gz &> /dev/stdout
 tar -xzf $FOLDER/flutter-master.tar.gz -C $FOLDER
 rm -rf $FOLDER/flutter-master.tar.gz
 mv $FOLDER/flutter-master $FOLDER/flutter
