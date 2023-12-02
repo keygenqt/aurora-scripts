@@ -32,6 +32,7 @@ sudo snap install aurora-cli --devmode
   - run - Run application in device.
   - firejail - Run application in device with firejail in container.
   - index - Select index device.
+  - all - Select all devices.
 
 ### License
 

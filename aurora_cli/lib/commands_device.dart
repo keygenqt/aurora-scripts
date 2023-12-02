@@ -49,6 +49,11 @@ class CommandsDevice extends Command<int> {
         'index',
         help: 'Select index.',
         defaultsTo: null,
+      )
+      ..addFlag(
+        'all',
+        negatable: false,
+        help: 'Select all devices.',
       );
   }
 
@@ -60,14 +65,18 @@ class CommandsDevice extends Command<int> {
 
   Logger get _logger => getIt<Logger>();
 
-  Map<String, dynamic>? _getDevice() {
+  List<Map<String, dynamic>> _getDevice() {
     final devices = Configuration.devices();
 
     if (devices.isEmpty) {
       _logger.info('Not a single device was found!');
       _logger.info(
           'Check configuration file: ${pathUserCommon}/configuration.yaml');
-      return null;
+      return [];
+    }
+
+    if (argResults?['all'] == true) {
+      return devices;
     }
 
     final index = (int.tryParse(argResults?['index'] ?? '') ?? 0) - 1;
@@ -75,12 +84,12 @@ class CommandsDevice extends Command<int> {
     if (argResults?['index'] != null &&
         (index < 0 || index >= devices.length)) {
       _logger.info('You specified the wrong index!');
-      return null;
+      return [];
     }
 
     if (index >= 0 && index < devices.length) {
       _logger.info('');
-      return devices[index];
+      return [devices[index]];
     }
 
     _logger
@@ -100,10 +109,10 @@ class CommandsDevice extends Command<int> {
     _logger.info('');
 
     if (input >= 0 && input < devices.length) {
-      return devices[input];
+      return [devices[input]];
     } else {
       _logger.info('You specified the wrong index!');
-      return null;
+      return [];
     }
   }
 
@@ -154,31 +163,39 @@ class CommandsDevice extends Command<int> {
   Future<int> run() async {
     final arg = _getArg(argResults);
     if (arg != null) {
-      final device = _getDevice();
+      final devices = _getDevice();
 
-      if (device == null) {
+      if (devices.isEmpty) {
         return ExitCode.usage.code;
       }
 
-      switch (arg) {
-        case CommandsDeviceArg.ssh_copy:
-          await _ssh_copy(device);
-          break;
-        case CommandsDeviceArg.command:
-          await _command(device);
-          break;
-        case CommandsDeviceArg.upload:
-          await _upload(device);
-          break;
-        case CommandsDeviceArg.install:
-          await _install(device);
-          break;
-        case CommandsDeviceArg.run:
-          await _run(device);
-          break;
-        case CommandsDeviceArg.firejail:
-          await _firejail(device);
-          break;
+      for (final device in devices) {
+        if (devices.length > 1) {
+          _logger
+            ..info('')
+            ..info('-> Run "${arg.name}", device: ${device['ip']}...')
+            ..info('');
+        }
+        switch (arg) {
+          case CommandsDeviceArg.ssh_copy:
+            await _ssh_copy(device);
+            break;
+          case CommandsDeviceArg.command:
+            await _command(device);
+            break;
+          case CommandsDeviceArg.upload:
+            await _upload(device);
+            break;
+          case CommandsDeviceArg.install:
+            await _install(device);
+            break;
+          case CommandsDeviceArg.run:
+            await _run(device);
+            break;
+          case CommandsDeviceArg.firejail:
+            await _firejail(device);
+            break;
+        }
       }
     } else {
       return ExitCode.usage.code;
