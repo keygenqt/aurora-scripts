@@ -24,7 +24,5 @@ sudo rm -rf $HOME/AuroraPlatformSDK/
 sudo rm -rf $HOME/.mersdk.profile
 sudo rm -rf $HOME/.scratchbox2
 
-bash
-
 echo
 echo "PlatformSDK successfully removed!"

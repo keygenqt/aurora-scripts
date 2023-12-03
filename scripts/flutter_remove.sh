@@ -22,7 +22,5 @@ fi
 
 rm -rf $FOLDER
 
-bash
-
 echo
 echo "Flutter for Aurora OS successfully removed!"
