@@ -72,6 +72,5 @@ $PSDK_DIR/sdk-chroot \
 $FLUTTER config --enable-aurora > /dev/null 2>&1
 $FLUTTER doctor
 
-## Update
-
-bash
+echo
+echo 'Done'
