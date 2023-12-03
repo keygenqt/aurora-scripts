@@ -6,6 +6,8 @@
 
 An application that combines different scripts that help an Aurora OS programmer in his daily work. You can use separate scripts - each of them is an atomic unit. Or install a CLI application (available in snap) and use all the scripts if necessary with a convenient interface.
 
+[![picture](data/btn_youtube.png)](https://youtu.be/8PGj5qGYmcU)
+
 ## Install
 
 [![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-black.svg)](https://snapcraft.io/aurora-cli)
