@@ -24,8 +24,12 @@ sudo snap install aurora-cli --devmode
   - sign - Sign (with re-sign) packages.
   - index - Select index key.
 * flutter
-  - install - Install latest Flutter SDK for Aurora OS.
+  - versions-installed - Get list installed versions Flutter SDK.
+  - versions-available - Get list available versions Flutter SDK.
+  - install - Install version Flutter SDK.
   - remove - Remove Flutter SDK.
+  - embedder-version - Get version installed Flutter embedder.
+  - embedder-install - Install embedder from Flutter SDK.
 * device
   - ssh-copy - Add ssh key to device.
   - command - Execute the command on the device.

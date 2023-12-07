@@ -1,6 +1,6 @@
 name: aurora-cli
 base: core22
-version: '1.0.2'
+version: '1.1.0'
 summary: A collection of scripts to help the Aurora OS developer.
 description: |
   Bash scripts combined into one CLI application written in Dart,
@@ -14,6 +14,7 @@ parts:
     plugin: nil
     stage-packages:
       - git
+      - git-lfs
       - tar
       - unzip
       - curl
@@ -48,3 +49,5 @@ apps:
     environment:
       LANG: C.UTF-8
       LC_ALL: C.UTF-8
+      GIT_EXEC_PATH: $SNAP/usr/lib/git-core
+      GIT_TEMPLATE_DIR: $SNAP/usr/share/git-core/templates

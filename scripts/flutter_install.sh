@@ -14,36 +14,82 @@ if [ -z "$PSDK_DIR" ] || [ ! -d "$HOME/AuroraPlatformSDK" ]; then
   exit 1
 fi
 
-## Variables
+## Get params keys
 
-GIT_URL="https://gitlab.com/omprussia/flutter/flutter/-/archive/master/flutter-master.tar.gz"
+while getopts v: flag; do
+  case "${flag}" in
+  v) version=${OPTARG} ;;
+  *)
+    echo "usage: $0 [-v]" >&2
+    exit 1
+    ;;
+  esac
+done
+
+if [[ -z $version ]]; then
+  echo 'Specify flutter version!';
+  exit;
+fi
+
+## Get versions
+
+latest=$(curl -s https://gitlab.com/omprussia/flutter/flutter/-/raw/master/packages/flutter_tools/lib/src/version.dart \
+| grep 'frameworkVersion: "' \
+| sed 's/[",: ]//g' \
+| sed 's/frameworkVersion//g')
+
+
+olds=($(curl -s "https://gitlab.com/api/v4/projects/48571227/repository/branches?per_page=50&regex=flutter-aurora-\d" \
+| grep -Po '"name":.*?[^\\]"' \
+| sed 's/"//g' \
+| sed 's/name:flutter-aurora-//g'))
+
+## Get URL
+
+if [[ "$version" == "$latest" ]]; then
+  BRANCH="master"
+else
+  for i in "${olds[@]}"
+  do
+      if [ "$version" == "$i" ] ; then
+          BRANCH="flutter-aurora-$version"
+          break;
+      fi
+  done
+fi
+
+if [[ -z $BRANCH ]]; then
+  echo "Version not found! To get versions run the command: 'aurora-cli flutter --versions'";
+  exit;
+fi
+
+GIT_URL="https://gitlab.com/omprussia/flutter/flutter.git"
 FOLDER="$HOME/.local/opt"
-FLUTTER="$HOME/.local/opt/flutter/bin/flutter"
+FLUTTER="$FOLDER/flutter-$version/bin/flutter"
 TARGET=$($PSDK_DIR/sdk-chroot sdk-assistant list | grep armv7hl | head -n 1 | sed -e 's/├─//g')
 
 ## Checks
 
-if [ -d "$FOLDER/flutter" ]; then
+if [ -d "$FOLDER/flutter-$version" ]; then
   echo "Already installed!"
   exit 1
 fi
 
 ## Check opt folder
 
-if [ ! -d $FOLDER ]; then
+if [ ! -d "$FOLDER" ]; then
   mkdir -p $FOLDER
 fi
 
 ## Download
 
-curl -s "$GIT_URL" --output $FOLDER/flutter-master.tar.gz
-tar -xzf $FOLDER/flutter-master.tar.gz -C $FOLDER
-rm -rf $FOLDER/flutter-master.tar.gz
-mv $FOLDER/flutter-master $FOLDER/flutter
-mkdir -p $FOLDER/flutter/.git
+git clone $GIT_URL "$FOLDER/flutter-$version"
+cd "$FOLDER/flutter-$version" && git checkout $BRANCH
 
-if [[ -z $(grep "flutter-aurora" $HOME/.bashrc) ]]; then
-  echo "alias flutter-aurora=$HOME/.local/opt/flutter/bin/flutter" >> $HOME/.bashrc
+## Add alias
+
+if [[ -z $(grep "alias flutter-aurora-$version=/home/keygenqt/.local/opt/flutter-$version/bin/flutter" $HOME/.bashrc) ]]; then
+  echo "alias flutter-aurora-$version=$HOME/.local/opt/flutter-$version/bin/flutter" >> $HOME/.bashrc
 fi
 
 ## Remove compatibility
@@ -58,19 +104,30 @@ $PSDK_DIR/sdk-chroot \
 
 $PSDK_DIR/sdk-chroot \
   sb2 -t $TARGET -m sdk-install -R zypper --no-gpg-checks in -y \
-  $FOLDER/flutter/bin/cache/artifacts/aurora/arm/platform-sdk/compatibility/*.rpm > /dev/null 2>&1
+  $FOLDER/flutter-$version/bin/cache/artifacts/aurora/arm/platform-sdk/compatibility/*.rpm > /dev/null 2>&1
 
 $PSDK_DIR/sdk-chroot \
   sb2 -t $TARGET -m sdk-install -R zypper --no-gpg-checks in -y \
-  $FOLDER/flutter/bin/cache/artifacts/aurora/arm/platform-sdk/*.rpm > /dev/null 2>&1
+  $FOLDER/flutter-$version/bin/cache/artifacts/aurora/arm/platform-sdk/*.rpm > /dev/null 2>&1
 
 $PSDK_DIR/sdk-chroot \
   sdk-assistant target remove --snapshots-of -y $TARGET
 
+echo
+
+$PSDK_DIR/sdk-chroot \
+  sb2 -t $TARGET -R zypper search -s flutter | grep '|\|+'
+
 ## Run flutter
 
-$FLUTTER config --enable-aurora > /dev/null 2>&1
-$FLUTTER doctor
+echo
+$FLUTTER config --enable-aurora
+echo
+
+$FLUTTER --version
 
 echo
+echo "The alias 'flutter-aurora-$version' has been added, you can remove the version from it for convenience in the file $HOME/.bashrc"
+echo
+
 echo 'Done'
