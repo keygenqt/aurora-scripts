@@ -44,15 +44,23 @@ fi
 ## Aurora Platform SDK requires superuser rights
 
 if ! [ -f "/etc/sudoers.d/mer-sdk-chroot" ]; then
-  sudo echo ''
-else
-  echo
+  sudo echo 'Sign...'
 fi
 
 ## Validate array
 
 for file in "${files[@]}"
 do
-  echo "Validate file: '$file'"
-  $PSDK_DIR/sdk-chroot sb2 -m emulate rpm-validator "$file"
+
+  if [ -f "$file" ]; then
+    echo
+    echo "Validate file: '$file'"
+    echo
+    $PSDK_DIR/sdk-chroot sb2 -m emulate rpm-validator "$file"
+  else
+    if [ ${#files[@]} == 1 ]; then
+        echo "No files found";
+        exit
+    fi
+  fi
 done
