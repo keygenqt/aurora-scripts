@@ -28,5 +28,8 @@ if [ -z "$ip" ] || [ -z "$port" ] ||  [ -z "$application" ]; then
 fi
 
 ## Run app
-
-ssh -p "$port" defaultuser@"$ip" "/usr/bin/$application"
+if [[ $ip == *"AuroraOS"* ]]; then
+  ssh -i $HOME/AuroraOS/vmshare/ssh/private_keys/sdk -p $port defaultuser@localhost "/usr/bin/$application"
+else
+  ssh -p "$port" defaultuser@"$ip" "/usr/bin/$application"
+fi

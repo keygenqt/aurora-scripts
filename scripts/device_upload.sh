@@ -46,7 +46,11 @@ fi
 
 for file in "${files[@]}"
 do
-  scp -P "$port" "$file" "defaultuser@$ip:~/Downloads"
+  if [[ $ip == *"AuroraOS"* ]]; then
+    scp -i $HOME/AuroraOS/vmshare/ssh/private_keys/sdk -P "$port" "$file" "defaultuser@localhost:~/Downloads"
+  else
+    scp -P "$port" "$file" "defaultuser@$ip:~/Downloads"
+  fi
 done
 
 echo "Upload successful from: $upload";

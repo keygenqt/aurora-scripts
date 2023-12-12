@@ -10,7 +10,7 @@ import 'package:mason_logger/mason_logger.dart';
 import 'package:path/path.dart' as p;
 import 'package:async/async.dart' show StreamGroup;
 
-enum CommandsPsdkArg { sign, install, remove }
+enum CommandsPsdkArg { sign, validate, install, remove }
 
 class CommandsPsdk extends Command<int> {
   CommandsPsdk() {
@@ -18,6 +18,11 @@ class CommandsPsdk extends Command<int> {
       ..addOption(
         'sign',
         help: 'Sign ( with re-sign) packages.',
+        defaultsTo: null,
+      )
+      ..addOption(
+        'validate',
+        help: 'Validate RPM packages.',
         defaultsTo: null,
       )
       ..addFlag(
@@ -101,6 +106,11 @@ class CommandsPsdk extends Command<int> {
       list.add(CommandsPsdkArg.remove);
     }
 
+    if (argResults?['validate'] != null &&
+        argResults!['validate'].toString().trim().isNotEmpty) {
+      list.add(CommandsPsdkArg.validate);
+    }
+
     if (argResults?['sign'] != null) {
       list.add(CommandsPsdkArg.sign);
     }
@@ -124,6 +134,9 @@ class CommandsPsdk extends Command<int> {
           return ExitCode.usage.code;
         }
         await _sign(key);
+        break;
+      case CommandsPsdkArg.validate:
+        await _validate();
         break;
       case CommandsPsdkArg.install:
         await _install();
@@ -151,6 +164,24 @@ class CommandsPsdk extends Command<int> {
         key['cert']!,
         '-p',
         argResults!['sign'].toString(),
+      ],
+    );
+    await stdout.addStream(StreamGroup.merge([
+      process.stdout,
+      process.stderr,
+    ]));
+  }
+
+  Future<void> _validate() async {
+    final process = await Process.start(
+      p.join(
+        pathSnap,
+        'scripts',
+        'psdk_validate.sh',
+      ),
+      [
+        '-p',
+        argResults!['validate'].toString(),
       ],
     );
     await stdout.addStream(StreamGroup.merge([

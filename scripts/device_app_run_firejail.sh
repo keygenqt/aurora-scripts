@@ -29,4 +29,8 @@ fi
 
 ## Run app in container
 
-ssh -p "$port" defaultuser@"$ip" "invoker --type=qt5 $application"
+if [[ $ip == *"AuroraOS"* ]]; then
+  ssh -i $HOME/AuroraOS/vmshare/ssh/private_keys/sdk -p $port defaultuser@localhost "invoker --type=qt5 $application"
+else
+  ssh -p "$port" defaultuser@"$ip" "invoker --type=qt5 $application"
+fi

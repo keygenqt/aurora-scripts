@@ -65,8 +65,21 @@ class CommandsDevice extends Command<int> {
 
   Logger get _logger => getIt<Logger>();
 
-  List<Map<String, dynamic>> _getDevice() {
+  Future<List<Map<String, dynamic>>> _getDevice() async {
     final devices = Configuration.devices();
+
+    final home = '${Platform.environment['SNAP_USER_COMMON']}/../../..';
+
+    final emulator =
+        await Directory('$home/AuroraOS/emulator/').listSync().firstOrNull;
+
+    if (emulator != null && argResults?['ssh-copy'] != true) {
+      devices.insert(0, {
+        'ip': p.basename(emulator.path),
+        'port': '2223',
+        'pass': '-',
+      });
+    }
 
     if (devices.isEmpty) {
       _logger.info('Not a single device was found!');
@@ -97,7 +110,7 @@ class CommandsDevice extends Command<int> {
       ..info('');
 
     for (final (index, device) in devices.indexed) {
-      _logger.info('${index + 1}. IP: ${device['ip']}');
+      _logger.info('${index + 1}. ${device['ip']}');
     }
 
     _logger
@@ -163,7 +176,7 @@ class CommandsDevice extends Command<int> {
   Future<int> run() async {
     final arg = _getArg(argResults);
     if (arg != null) {
-      final devices = _getDevice();
+      final devices = await _getDevice();
 
       if (devices.isEmpty) {
         return ExitCode.usage.code;

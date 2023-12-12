@@ -27,4 +27,10 @@ if [ -z "$ip" ] || [ -z "$port" ] ||  [ -z "$command" ]; then
   exit 1
 fi
 
-ssh -p "$port" "defaultuser@$ip" "$command"
+if [[ $ip == *"AuroraOS"* ]]; then
+  ssh -i $HOME/AuroraOS/vmshare/ssh/private_keys/sdk -p $port defaultuser@localhost "$command"
+else
+  ssh -p "$port" "defaultuser@$ip" "$command"
+fi
+
+

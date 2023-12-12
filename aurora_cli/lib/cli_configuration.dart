@@ -41,7 +41,6 @@ class Configuration {
             'ip': device['ip']!,
             'port': (device['port'] ?? 22).toString(),
             'pass': device['pass']!,
-            'default': device['default'] == true,
           });
         } catch (e) {
           print('Get devices: $e');

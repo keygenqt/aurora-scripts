@@ -40,17 +40,21 @@ fi
 
 filename=$(basename $rpm)
 
-## Upload rpm file for install
-
-scp -P "$port" "$rpm" "defaultuser@$ip:~/Downloads"
-
-## Try install
-
-result=$(ssh -p "$port" "defaultuser@$ip" "echo $su | devel-su pkcon -y install-local ~/Downloads/$filename" &> /dev/null || echo "error")
-
-## Remove rpm file
-
-ssh -p "$port" "defaultuser@$ip" "rm ~/Downloads/$filename" > /dev/null 2>&1
+if [[ $ip == *"AuroraOS"* ]]; then
+  ## Upload rpm file for install
+  scp -i $HOME/AuroraOS/vmshare/ssh/private_keys/sdk -P "$port" "$rpm" "defaultuser@localhost:~/Downloads"
+  ## Try install
+  result=$(ssh -i $HOME/AuroraOS/vmshare/ssh/private_keys/sdk -p $port root@localhost "pkcon -y install-local /home/defaultuser/Downloads/$filename")
+  ## Remove rpm file
+  ssh -i $HOME/AuroraOS/vmshare/ssh/private_keys/sdk -p $port defaultuser@localhost "rm ~/Downloads/$filename" > /dev/null 2>&1
+else
+  ## Upload rpm file for install
+  scp -P "$port" "$rpm" "defaultuser@$ip:~/Downloads"
+  ## Try install
+  result=$(ssh -p "$port" "defaultuser@$ip" "echo $su | devel-su pkcon -y install-local ~/Downloads/$filename" &> /dev/null || echo "error")
+  ## Remove rpm file
+  ssh -p "$port" "defaultuser@$ip" "rm ~/Downloads/$filename" > /dev/null 2>&1
+fi
 
 ## Output
 
