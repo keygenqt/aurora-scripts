@@ -3,15 +3,15 @@
 source $(dirname "$0")/snap_init.sh
 
 ################################
-## Install 4.0.2.249 PlatformSDK
+## Install 4.0.2.303 PlatformSDK
 ################################
 
 ## Variables
 
-URL_CHROOT="https://sdk-repo.omprussia.ru/sdk/installers/4.0.2/PlatformSDK/4.0.2.249/Aurora_OS-4.0.2.249-base-Aurora_Platform_SDK_Chroot-i486.tar.bz2"
-URL_TOOLING="https://sdk-repo.omprussia.ru/sdk/installers/4.0.2/PlatformSDK/4.0.2.249/Aurora_OS-4.0.2.249-base-Aurora_SDK_Tooling-i486.tar.bz2"
-URL_TARGET_armv7hl="https://sdk-repo.omprussia.ru/sdk/installers/4.0.2/PlatformSDK/4.0.2.249/Aurora_OS-4.0.2.249-base-Aurora_SDK_Target-armv7hl.tar.bz2"
-URL_TARGET_i486="https://sdk-repo.omprussia.ru/sdk/installers/4.0.2/PlatformSDK/4.0.2.249/Aurora_OS-4.0.2.249-base-Aurora_SDK_Target-i486.tar.bz2"
+URL_CHROOT="https://sdk-repo.omprussia.ru/sdk/installers/4.0.2/PlatformSDK/4.0.2.303/Aurora_OS-4.0.2.303-base-Aurora_Platform_SDK_Chroot-i486.tar.bz2"
+URL_TOOLING="https://sdk-repo.omprussia.ru/sdk/installers/4.0.2/PlatformSDK/4.0.2.303/Aurora_OS-4.0.2.303-base-Aurora_SDK_Tooling-i486.tar.bz2"
+URL_TARGET_armv7hl="https://sdk-repo.omprussia.ru/sdk/installers/4.0.2/PlatformSDK/4.0.2.303/Aurora_OS-4.0.2.303-base-Aurora_SDK_Target-armv7hl.tar.bz2"
+URL_TARGET_i486="https://sdk-repo.omprussia.ru/sdk/installers/4.0.2/PlatformSDK/4.0.2.303/Aurora_OS-4.0.2.303-base-Aurora_SDK_Target-i486.tar.bz2"
 
 USERNAME=$(basename $HOME)
 FOLDER=$HOME/AuroraPlatformSDK

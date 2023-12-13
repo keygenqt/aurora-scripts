@@ -19,7 +19,7 @@ sudo snap install aurora-cli --devmode
 ## Features
 
 * psdk
-  - install - Install Aurora Platform SDK version 4.0.2.249.
+  - install - Install Aurora Platform SDK version 4.0.2.303.
   - remove - Remove Aurora Platform SDK.
   - validate - Validate RPM packages.
   - sign - Sign (with re-sign) packages.

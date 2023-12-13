@@ -16,11 +16,11 @@ fi
 
 TARGET=$($PSDK_DIR/sdk-chroot sdk-assistant list | grep armv7hl | head -n 1 | sed -e 's/├─//g')
 
-RESULT=$($PSDK_DIR/sdk-chroot sb2 -t $TARGET -R zypper search -s flutter | grep '|\|+')
+RESULT=$($PSDK_DIR/sdk-chroot sb2 -t $TARGET -R zypper search --installed-only -s flutter | grep '|\|+')
 
 if [ -z "$RESULT" ]; then
   echo 'Not found embedder'
 fi
 
 $PSDK_DIR/sdk-chroot \
-  sb2 -t $TARGET -R zypper search -s flutter | grep '|\|+'
+  sb2 -t $TARGET -R zypper search --installed-only -s flutter | grep '|\|+'

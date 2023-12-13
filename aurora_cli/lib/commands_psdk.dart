@@ -28,7 +28,7 @@ class CommandsPsdk extends Command<int> {
       ..addFlag(
         'install',
         negatable: false,
-        help: 'Install Aurora Platform SDK version 4.0.2.249.',
+        help: 'Install Aurora Platform SDK version 4.0.2.303.',
       )
       ..addFlag(
         'remove',
