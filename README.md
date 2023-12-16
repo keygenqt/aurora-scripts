@@ -38,6 +38,7 @@ sudo snap install aurora-cli --devmode
   - install - Install RPM package in device.
   - run - Run application in device.
   - firejail - Run application in device with firejail in container.
+  - firejail-dbus - Firejail for Aurora OS 5.0.
   - index - Select index device.
   - all - Select all devices.
 

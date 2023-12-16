@@ -10,7 +10,15 @@ import 'package:mason_logger/mason_logger.dart';
 import 'package:path/path.dart' as p;
 import 'package:async/async.dart' show StreamGroup;
 
-enum CommandsDeviceArg { ssh_copy, command, upload, install, run, firejail }
+enum CommandsDeviceArg {
+  ssh_copy,
+  command,
+  upload,
+  install,
+  run,
+  firejail,
+  firejail_dbus
+}
 
 class CommandsDevice extends Command<int> {
   CommandsDevice() {
@@ -46,6 +54,11 @@ class CommandsDevice extends Command<int> {
         defaultsTo: null,
       )
       ..addOption(
+        'firejail-dbus',
+        help: 'Firejail for Aurora OS 5.0.',
+        defaultsTo: null,
+      )
+      ..addOption(
         'index',
         help: 'Select index.',
         defaultsTo: null,
@@ -68,7 +81,11 @@ class CommandsDevice extends Command<int> {
   Future<List<Map<String, dynamic>>> _getDevice() async {
     final devices = Configuration.devices();
 
-    final home = '${Platform.environment['SNAP_USER_COMMON']}/../../..';
+    String home = Platform.environment['HOME']!;
+
+    if (Platform.environment.containsKey('SNAP_USER_COMMON')) {
+      home = '${Platform.environment['SNAP_USER_COMMON']}/../../..';
+    }
 
     final emulator =
         await Directory('$home/AuroraOS/emulator/').listSync().firstOrNull;
@@ -161,6 +178,11 @@ class CommandsDevice extends Command<int> {
       list.add(CommandsDeviceArg.firejail);
     }
 
+    if (argResults?['firejail-dbus'] != null &&
+        argResults!['firejail-dbus'].toString().trim().isNotEmpty) {
+      list.add(CommandsDeviceArg.firejail_dbus);
+    }
+
     if (list.length > 1) {
       _logger.info('Only one flag at a time!');
       list.clear();
@@ -207,6 +229,9 @@ class CommandsDevice extends Command<int> {
             break;
           case CommandsDeviceArg.firejail:
             await _firejail(device);
+            break;
+          case CommandsDeviceArg.firejail_dbus:
+            await _firejail_dbus(device);
             break;
         }
       }
@@ -340,6 +365,28 @@ class CommandsDevice extends Command<int> {
         device['port']!,
         '-a',
         argResults?['firejail'],
+      ],
+    );
+    await stdout.addStream(StreamGroup.merge([
+      process.stdout,
+      process.stderr,
+    ]));
+  }
+
+  Future<void> _firejail_dbus(Map<String, dynamic> device) async {
+    final process = await Process.start(
+      p.join(
+        pathSnap,
+        'scripts',
+        'device_app_run_firejail_dbus.sh',
+      ),
+      [
+        '-i',
+        device['ip']!,
+        '-p',
+        device['port']!,
+        '-a',
+        argResults?['firejail-dbus'],
       ],
     );
     await stdout.addStream(StreamGroup.merge([
