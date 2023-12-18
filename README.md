@@ -16,6 +16,12 @@ An application that combines different scripts that help an Aurora OS programmer
 sudo snap install aurora-cli --devmode
 ```
 
+Additional dependencies to work flutter
+
+```
+sudo apt install curl git git-lfs unzip bzip2
+```
+
 ## Features
 
 * psdk
