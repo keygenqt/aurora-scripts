@@ -19,7 +19,7 @@ sudo snap install aurora-cli --devmode
 Additional dependencies to work Flutter
 
 ```
-sudo apt install curl git git-lfs unzip bzip2
+sudo apt update && sudo apt install curl git git-lfs unzip bzip2
 ```
 
 ## Features
