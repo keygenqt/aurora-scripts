@@ -96,11 +96,14 @@ if ! grep "export PSDK_DIR=" "$HOME/.bashrc" > /dev/null; then
   echo "export PSDK_DIR=$FOLDER_PATH/sdks/aurora_psdk" >> "$HOME/.bashrc"
 fi
 
+alias="aurora_psdk"
+
 if ! grep "alias aurora_psdk=" "$HOME/.bashrc" > /dev/null; then
-  echo "alias aurora_psdk=$FOLDER_PATH/sdks/aurora_psdk/sdk-chroot" >> "$HOME/.bashrc"
+  echo "alias $alias=$FOLDER_PATH/sdks/aurora_psdk/sdk-chroot" >> "$HOME/.bashrc"
 else
-  if ! grep "alias aurora_psdk_$VERSION=" "$HOME/.bashrc" > /dev/null; then
-    echo "alias aurora_psdk_$VERSION=$FOLDER_PATH/sdks/aurora_psdk/sdk-chroot" >> "$HOME/.bashrc"
+  alias="aurora_psdk_$VERSION"
+  if ! grep "alias $alias=" "$HOME/.bashrc" > /dev/null; then
+    echo "alias $alias=$FOLDER_PATH/sdks/aurora_psdk/sdk-chroot" >> "$HOME/.bashrc"
   fi
 fi
 
@@ -137,4 +140,4 @@ EOF
 fi
 
 echo
-echo 'Done'
+echo "Done. Run command: $alias sdk-assistant list"
