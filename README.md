@@ -16,6 +16,12 @@ An application that combines different scripts that help an Aurora OS programmer
 sudo snap install aurora-cli --devmode
 ```
 
+or
+
+```
+sudo snap install aurora-cli --channel=latest/candidate --devmode
+```
+
 Additional dependencies to work Flutter
 
 ```
