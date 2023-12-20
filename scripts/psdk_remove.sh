@@ -6,23 +6,35 @@ source $(dirname "$0")/snap_init.sh
 ## Remove PlatformSDK from PC
 #############################
 
-## Variables
+## Get params keys
 
-FOLDER=$HOME/AuroraPlatformSDK
+while getopts f: flag; do
+  case "${flag}" in
+  f) folder=${OPTARG} ;;
+  *)
+    echo "usage: $0 [-f]" >&2
+    exit 1
+    ;;
+  esac
+done
+
+## Check params keys
+
+if [ -z "$folder" ]; then
+  echo "Specify folder PSDK!"
+  exit 1
+fi
 
 ## Check psdk
 
-if [ ! -d "$FOLDER" ]; then
+if [ ! -d "$folder" ]; then
     echo
-    echo "Already deleted!"
+    echo "Platform SDK ($folder) not found!"
     exit 1
 fi
 
 ## Remove
-
-sudo rm -rf $HOME/AuroraPlatformSDK/
-sudo rm -rf $HOME/.mersdk.profile
-sudo rm -rf $HOME/.scratchbox2
+sudo rm -rf "$folder"
 
 echo
-echo "PlatformSDK successfully removed!"
+echo "Platform SDK successfully removed!"

@@ -49,4 +49,32 @@ class Configuration {
     }
     return result;
   }
+
+  static List<Map<String, dynamic>> psdk() {
+    final List<Map<String, dynamic>> result = [];
+
+    if (_data['psdk'] != null) {
+      final psdk = _data['psdk'] as YamlList;
+      for (final data in psdk) {
+        try {
+          final List<String> targets = [];
+          for (final target in (data['targets'] as YamlList)) {
+            targets.add(target.toString());
+          }
+
+          final name = 'Platform SDK ${p.basename(data['chroot']!).split('-').elementAt(1)}';
+
+          result.add({
+            'name': name,
+            'chroot': data['chroot']!,
+            'tooling': data['tooling']!,
+            'targets': targets,
+          });
+        } catch (e) {
+          print('Get psdk: $e');
+        }
+      }
+    }
+    return result;
+  }
 }

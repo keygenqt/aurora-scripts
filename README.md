@@ -25,7 +25,7 @@ sudo apt update && sudo apt install curl git git-lfs unzip bzip2
 ## Features
 
 * psdk
-  - install - Install Aurora Platform SDK version 4.0.2.303.
+  - install - Install Aurora Platform SDK.
   - remove - Remove Aurora Platform SDK.
   - validate - Validate RPM packages.
   - sign - Sign (with re-sign) packages.

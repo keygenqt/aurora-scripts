@@ -28,7 +28,7 @@ class CommandsPsdk extends Command<int> {
       ..addFlag(
         'install',
         negatable: false,
-        help: 'Install Aurora Platform SDK version 4.0.2.303.',
+        help: 'Install Aurora Platform SDK.',
       )
       ..addFlag(
         'remove',
@@ -49,6 +49,51 @@ class CommandsPsdk extends Command<int> {
   String get name => 'psdk';
 
   Logger get _logger => getIt<Logger>();
+
+    Map<String, dynamic>? _getPsdk() {
+    final psdk = Configuration.psdk();
+
+    if (psdk.isEmpty) {
+      _logger.info('Not a single psdk was found!');
+      _logger.info(
+          'Check configuration file: ${pathUserCommon}/configuration.yaml');
+      return null;
+    }
+
+    final index = (int.tryParse(argResults?['index'] ?? '') ?? 0) - 1;
+
+    if (argResults?['index'] != null && (index < 0 || index >= psdk.length)) {
+      _logger.info('You specified the wrong index!');
+      return null;
+    }
+
+    if (index >= 0 && index < psdk.length) {
+      return psdk[index];
+    }
+
+    _logger
+      ..info('Platform SDK that do this were found:')
+      ..info('');
+
+    for (final (index, item) in psdk.indexed) {
+      _logger.info('${index + 1}. ${item['name']}');
+    }
+
+    _logger
+      ..info('')
+      ..info('Enter the index of the psdk:');
+
+    final input = (int.tryParse(stdin.readLineSync() ?? '') ?? 0) - 1;
+
+    _logger.info('');
+
+    if (input >= 0 && input < psdk.length) {
+      return psdk[input];
+    } else {
+      _logger.info('You specified the wrong index!');
+      return null;
+    }
+  }
 
   Map<String, dynamic>? _getKey() {
     final keys = Configuration.keys();
@@ -89,6 +134,66 @@ class CommandsPsdk extends Command<int> {
 
     if (input >= 0 && input < keys.length) {
       return keys[input];
+    } else {
+      _logger.info('You specified the wrong index!');
+      return null;
+    }
+  }
+
+  Future<String?> _getFolderPsdk() async {
+
+    String home = Platform.environment['HOME']!;
+
+    if (Platform.environment.containsKey('SNAP_USER_COMMON')) {
+      home = '${Platform.environment['SNAP_USER_COMMON']}/../../..';
+    }
+
+    final Directory psdkTargets = Directory(home);
+    final List<FileSystemEntity> entities = await psdkTargets.list().toList();
+    final List<FileSystemEntity> psdk = [];
+
+    for (final FileSystemEntity entity in entities.whereType<Directory>()) {
+      if (!entity.path.contains('Aurora') ||
+          !entity.path.contains('Platform')) {
+        continue;
+      }
+      psdk.add(entity);
+    }
+
+    if (psdk.isEmpty) {
+      _logger.info('Not a single Platform SDK was found!');
+      return null;
+    }
+
+    final index = (int.tryParse(argResults?['index'] ?? '') ?? 0) - 1;
+
+    if (argResults?['index'] != null && (index < 0 || index >= psdk.length)) {
+      _logger.info('You specified the wrong index!');
+      return null;
+    }
+
+    if (index >= 0 && index < psdk.length) {
+      return psdk[index].path;
+    }
+
+    _logger
+      ..info('Platform SDK that do this were found:')
+      ..info('');
+
+    for (final (index, item) in psdk.indexed) {
+      _logger.info('${index + 1}. ${p.basename(item.path)}');
+    }
+
+    _logger
+      ..info('')
+      ..info('Enter the index of the psdk:');
+
+    final input = (int.tryParse(stdin.readLineSync() ?? '') ?? 0) - 1;
+
+    _logger.info('');
+
+    if (input >= 0 && input < psdk.length) {
+      return psdk[input].path;
     } else {
       _logger.info('You specified the wrong index!');
       return null;
@@ -139,10 +244,18 @@ class CommandsPsdk extends Command<int> {
         await _validate();
         break;
       case CommandsPsdkArg.install:
-        await _install();
+        final psdk = _getPsdk();
+        if (psdk == null) {
+          return ExitCode.usage.code;
+        }
+        await _install(psdk);
         break;
       case CommandsPsdkArg.remove:
-        await _remove();
+        final folder = await _getFolderPsdk();
+        if (folder == null) {
+          return ExitCode.usage.code;
+        }
+        await _remove(folder);
         break;
       default:
         return ExitCode.usage.code;
@@ -190,7 +303,7 @@ class CommandsPsdk extends Command<int> {
     ]));
   }
 
-  Future<void> _install() async {
+  Future<void> _install(Map<String, dynamic> psdk) async {
     _logger
       ..info('The installation has started, please wait.')
       ..info("It's not very fast, sometimes data doesn't download quickly...")
@@ -201,7 +314,16 @@ class CommandsPsdk extends Command<int> {
         'scripts',
         'psdk_install.sh',
       ),
-      [],
+      [
+        '-n',
+        psdk['name'],
+        '-c',
+        psdk['chroot'],
+        '-t',
+        psdk['tooling'],
+        '-l',
+        psdk['targets'].join(';'),
+      ],
     );
     await stdout.addStream(StreamGroup.merge([
       process.stdout,
@@ -209,14 +331,17 @@ class CommandsPsdk extends Command<int> {
     ]));
   }
 
-  Future<void> _remove() async {
+  Future<void> _remove(String folder) async {
     final process = await Process.start(
       p.join(
         pathSnap,
         'scripts',
         'psdk_remove.sh',
       ),
-      [],
+      [
+        '-f',
+        folder,
+      ],
     );
     await stdout.addStream(StreamGroup.merge([
       process.stdout,

@@ -1,5 +1,5 @@
 ## Application configuration file aurora-cli
-## Version: 0.0.4
+## Version: 0.0.5
 
 ## Path to sign keys
 ## keys:
@@ -14,7 +14,7 @@ keys:
 
 ## Devices list
 ## devices:
-##  - ip: {device ip wifi or or cable connection}
+##  - ip: {device ip WI-FI or cable connection}
 ##    port: {optional ssh port which is used to connect to the device, default 22}
 ##    pass: {password in device for devel-su}
 ##
@@ -22,3 +22,28 @@ devices:
   - ip: 192.168.2.15
     port: 22
     pass: '00000'
+
+## Platform SDK links
+## psdk:
+##  - chroot: {link psdk chroot}
+##    tooling: {link psdk tooling}
+##    targets:
+##      - {link target armv7hl}
+##      - {link target i486}
+##      - {link target ...}
+##
+psdk:
+  ## Platform SDK Public
+  ## 4.0.2.303
+  - chroot: https://sdk-repo.omprussia.ru/sdk/installers/4.0.2/PlatformSDK/4.0.2.303/Aurora_OS-4.0.2.303-base-Aurora_Platform_SDK_Chroot-i486.tar.bz2
+    tooling: https://sdk-repo.omprussia.ru/sdk/installers/4.0.2/PlatformSDK/4.0.2.303/Aurora_OS-4.0.2.303-base-Aurora_SDK_Tooling-i486.tar.bz2
+    targets: 
+      - https://sdk-repo.omprussia.ru/sdk/installers/4.0.2/PlatformSDK/4.0.2.303/Aurora_OS-4.0.2.303-base-Aurora_SDK_Target-armv7hl.tar.bz2
+      - https://sdk-repo.omprussia.ru/sdk/installers/4.0.2/PlatformSDK/4.0.2.303/Aurora_OS-4.0.2.303-base-Aurora_SDK_Target-i486.tar.bz2
+  ## Platform SDK Public
+  ## 4.0.2.249
+  - chroot: https://sdk-repo.omprussia.ru/sdk/installers/4.0.2/PlatformSDK/4.0.2.249/Aurora_OS-4.0.2.249-base-Aurora_Platform_SDK_Chroot-i486.tar.bz2
+    tooling: https://sdk-repo.omprussia.ru/sdk/installers/4.0.2/PlatformSDK/4.0.2.249/Aurora_OS-4.0.2.249-base-Aurora_SDK_Tooling-i486.tar.bz2
+    targets:
+      - https://sdk-repo.omprussia.ru/sdk/installers/4.0.2/PlatformSDK/4.0.2.249/Aurora_OS-4.0.2.249-base-Aurora_SDK_Target-armv7hl.tar.bz2
+      - https://sdk-repo.omprussia.ru/sdk/installers/4.0.2/PlatformSDK/4.0.2.249/Aurora_OS-4.0.2.249-base-Aurora_SDK_Target-i486.tar.bz2
