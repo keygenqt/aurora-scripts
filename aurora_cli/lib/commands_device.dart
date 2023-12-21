@@ -5,6 +5,7 @@ import 'package:args/command_runner.dart';
 import 'package:aurora_cli/cli_configuration.dart';
 import 'package:aurora_cli/cli_constants.dart';
 import 'package:aurora_cli/cli_di.dart';
+import 'package:aurora_cli/helper.dart';
 import 'package:mason_logger/mason_logger.dart';
 
 import 'package:path/path.dart' as p;
@@ -38,6 +39,7 @@ class CommandsDevice extends Command<int> {
         help: 'Upload file to Download directory device.',
         defaultsTo: null,
       )
+      // @todo change to addFlag and add query versions
       ..addOption(
         'install',
         help: 'Install RPM package in device.',
@@ -78,7 +80,7 @@ class CommandsDevice extends Command<int> {
 
   Logger get _logger => getIt<Logger>();
 
-  Future<List<Map<String, dynamic>>> _getDevice() async {
+  Future<List<Map<String, dynamic>>> _getDevices() async {
     final devices = Configuration.devices();
 
     String home = Platform.environment['HOME']!;
@@ -92,58 +94,14 @@ class CommandsDevice extends Command<int> {
 
     if (emulator != null && argResults?['ssh-copy'] != true) {
       devices.insert(0, {
+        'name': p.basename(emulator.path),
         'ip': p.basename(emulator.path),
         'port': '2223',
         'pass': '-',
       });
     }
 
-    if (devices.isEmpty) {
-      _logger.info('Not a single device was found!');
-      _logger.info(
-          'Check configuration file: ${pathUserCommon}/configuration.yaml');
-      return [];
-    }
-
-    if (argResults?['all'] == true) {
-      return devices;
-    }
-
-    final index = (int.tryParse(argResults?['index'] ?? '') ?? 0) - 1;
-
-    if (argResults?['index'] != null &&
-        (index < 0 || index >= devices.length)) {
-      _logger.info('You specified the wrong index!');
-      return [];
-    }
-
-    if (index >= 0 && index < devices.length) {
-      _logger.info('');
-      return [devices[index]];
-    }
-
-    _logger
-      ..info('Devices that do this were found:')
-      ..info('');
-
-    for (final (index, device) in devices.indexed) {
-      _logger.info('${index + 1}. ${device['ip']}');
-    }
-
-    _logger
-      ..info('')
-      ..info('Enter the index of the device:');
-
-    final input = (int.tryParse(stdin.readLineSync() ?? '') ?? 0) - 1;
-
-    _logger.info('');
-
-    if (input >= 0 && input < devices.length) {
-      return [devices[input]];
-    } else {
-      _logger.info('You specified the wrong index!');
-      return [];
-    }
+    return devices;
   }
 
   CommandsDeviceArg? _getArg(ArgResults? args) {
@@ -198,7 +156,21 @@ class CommandsDevice extends Command<int> {
   Future<int> run() async {
     final arg = _getArg(argResults);
     if (arg != null) {
-      final devices = await _getDevice();
+      final devices = await _getDevices();
+
+      if (argResults?['all'] != true) {
+        final device = Helper.getItem(
+          devices,
+          'device',
+          true,
+          argResults?['index'],
+          _logger,
+        );
+        devices.clear();
+        if (device != null) {
+          devices.add(device);
+        }
+      }
 
       if (devices.isEmpty) {
         return ExitCode.usage.code;

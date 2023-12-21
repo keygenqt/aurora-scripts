@@ -38,6 +38,7 @@ class Configuration {
       for (final device in devices) {
         try {
           result.add({
+            'name': device['ip']!,
             'ip': device['ip']!,
             'port': (device['port'] ?? 22).toString(),
             'pass': device['pass']!,
@@ -62,7 +63,8 @@ class Configuration {
             targets.add(target.toString());
           }
 
-          final name = 'Platform SDK ${p.basename(data['chroot']!).split('-').elementAt(1)}';
+          final name =
+              'Platform SDK ${p.basename(data['chroot']!).split('-').elementAt(1)}';
 
           result.add({
             'name': name,

@@ -5,6 +5,7 @@ import 'package:args/command_runner.dart';
 import 'package:aurora_cli/cli_configuration.dart';
 import 'package:aurora_cli/cli_constants.dart';
 import 'package:aurora_cli/cli_di.dart';
+import 'package:aurora_cli/helper.dart';
 import 'package:mason_logger/mason_logger.dart';
 
 import 'package:path/path.dart' as p;
@@ -50,154 +51,29 @@ class CommandsPsdk extends Command<int> {
 
   Logger get _logger => getIt<Logger>();
 
-    Map<String, dynamic>? _getPsdk() {
-    final psdk = Configuration.psdk();
-
-    if (psdk.isEmpty) {
-      _logger.info('Not a single psdk was found!');
-      _logger.info(
-          'Check configuration file: ${pathUserCommon}/configuration.yaml');
-      return null;
-    }
-
-    final index = (int.tryParse(argResults?['index'] ?? '') ?? 0) - 1;
-
-    if (argResults?['index'] != null && (index < 0 || index >= psdk.length)) {
-      _logger.info('You specified the wrong index!');
-      return null;
-    }
-
-    if (index >= 0 && index < psdk.length) {
-      return psdk[index];
-    }
-
-    _logger
-      ..info('Platform SDK that do this were found:')
-      ..info('');
-
-    for (final (index, item) in psdk.indexed) {
-      _logger.info('${index + 1}. ${item['name']}');
-    }
-
-    _logger
-      ..info('')
-      ..info('Enter the index of the psdk:');
-
-    final input = (int.tryParse(stdin.readLineSync() ?? '') ?? 0) - 1;
-
-    _logger.info('');
-
-    if (input >= 0 && input < psdk.length) {
-      return psdk[input];
-    } else {
-      _logger.info('You specified the wrong index!');
-      return null;
-    }
-  }
-
-  Map<String, dynamic>? _getKey() {
-    final keys = Configuration.keys();
-
-    if (keys.isEmpty) {
-      _logger.info('Not a single key was found!');
-      _logger.info(
-          'Check configuration file: ${pathUserCommon}/configuration.yaml');
-      return null;
-    }
-
-    final index = (int.tryParse(argResults?['index'] ?? '') ?? 0) - 1;
-
-    if (argResults?['index'] != null && (index < 0 || index >= keys.length)) {
-      _logger.info('You specified the wrong index!');
-      return null;
-    }
-
-    if (index >= 0 && index < keys.length) {
-      return keys[index];
-    }
-
-    _logger
-      ..info('Keys that do this were found:')
-      ..info('');
-
-    for (final (index, key) in keys.indexed) {
-      _logger.info('${index + 1}. Name: ${key['name']}');
-    }
-
-    _logger
-      ..info('')
-      ..info('Enter the index of the key:');
-
-    final input = (int.tryParse(stdin.readLineSync() ?? '') ?? 0) - 1;
-
-    _logger.info('');
-
-    if (input >= 0 && input < keys.length) {
-      return keys[input];
-    } else {
-      _logger.info('You specified the wrong index!');
-      return null;
-    }
-  }
-
-  Future<String?> _getFolderPsdk() async {
-
+  Future<List<Map<String, dynamic>>> _getFoldersPsdk() async {
     String home = Platform.environment['HOME']!;
 
     if (Platform.environment.containsKey('SNAP_USER_COMMON')) {
       home = '${Platform.environment['SNAP_USER_COMMON']}/../../..';
     }
 
+    List<Map<String, dynamic>> folders = [];
     final Directory psdkTargets = Directory(home);
     final List<FileSystemEntity> entities = await psdkTargets.list().toList();
-    final List<FileSystemEntity> psdk = [];
 
     for (final FileSystemEntity entity in entities.whereType<Directory>()) {
       if (!entity.path.contains('Aurora') ||
           !entity.path.contains('Platform')) {
         continue;
       }
-      psdk.add(entity);
+      folders.add({
+        'name': p.basename(entity.path),
+        'path': entity.path,
+      });
     }
 
-    if (psdk.isEmpty) {
-      _logger.info('Not a single Platform SDK was found!');
-      return null;
-    }
-
-    final index = (int.tryParse(argResults?['index'] ?? '') ?? 0) - 1;
-
-    if (argResults?['index'] != null && (index < 0 || index >= psdk.length)) {
-      _logger.info('You specified the wrong index!');
-      return null;
-    }
-
-    if (index >= 0 && index < psdk.length) {
-      return psdk[index].path;
-    }
-
-    _logger
-      ..info('Platform SDK that do this were found:')
-      ..info('');
-
-    for (final (index, item) in psdk.indexed) {
-      _logger.info('${index + 1}. ${p.basename(item.path)}');
-    }
-
-    _logger
-      ..info('')
-      ..info('Enter the index of the psdk:');
-
-    final input = (int.tryParse(stdin.readLineSync() ?? '') ?? 0) - 1;
-
-    _logger.info('');
-
-    if (input >= 0 && input < psdk.length) {
-      return psdk[input].path;
-    } else {
-      _logger.info('You specified the wrong index!');
-      return null;
-    }
+    return folders;
   }
 
   CommandsPsdkArg? _getArg(ArgResults? args) {
@@ -234,7 +110,13 @@ class CommandsPsdk extends Command<int> {
   Future<int> run() async {
     switch (_getArg(argResults)) {
       case CommandsPsdkArg.sign:
-        final key = _getKey();
+        final key = Helper.getItem(
+          Configuration.keys(),
+          'key',
+          true,
+          argResults?['index'],
+          _logger,
+        );
         if (key == null) {
           return ExitCode.usage.code;
         }
@@ -244,14 +126,26 @@ class CommandsPsdk extends Command<int> {
         await _validate();
         break;
       case CommandsPsdkArg.install:
-        final psdk = _getPsdk();
+        final psdk = Helper.getItem(
+          Configuration.psdk(),
+          'psdk',
+          true,
+          argResults?['index'],
+          _logger,
+        );
         if (psdk == null) {
           return ExitCode.usage.code;
         }
         await _install(psdk);
         break;
       case CommandsPsdkArg.remove:
-        final folder = await _getFolderPsdk();
+        final folder = Helper.getItem(
+          await _getFoldersPsdk(),
+          'Platform SDK',
+          true,
+          argResults?['index'],
+          _logger,
+        );
         if (folder == null) {
           return ExitCode.usage.code;
         }
@@ -331,7 +225,7 @@ class CommandsPsdk extends Command<int> {
     ]));
   }
 
-  Future<void> _remove(String folder) async {
+  Future<void> _remove(Map<String, dynamic> folder) async {
     final process = await Process.start(
       p.join(
         pathSnap,
@@ -340,7 +234,7 @@ class CommandsPsdk extends Command<int> {
       ),
       [
         '-f',
-        folder,
+        folder['path'],
       ],
     );
     await stdout.addStream(StreamGroup.merge([
