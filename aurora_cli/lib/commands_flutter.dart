@@ -4,6 +4,7 @@ import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
 import 'package:aurora_cli/cli_constants.dart';
 import 'package:aurora_cli/cli_di.dart';
+import 'package:aurora_cli/helper.dart';
 import 'package:mason_logger/mason_logger.dart';
 
 import 'package:path/path.dart' as p;
@@ -31,11 +32,10 @@ class CommandsFlutter extends Command<int> {
         negatable: false,
         help: 'Get list available versions Flutter SDK.',
       )
-      ..addOption(
+      ..addFlag(
         'install',
-        help: 'Install version Flutter SDK.',
-        valueHelp: 'flutter-version',
-        defaultsTo: null,
+        negatable: false,
+        help: 'Install Flutter SDK.',
       )
       ..addOption(
         'remove',
@@ -75,8 +75,7 @@ class CommandsFlutter extends Command<int> {
       list.add(CommandsFlutterArg.versions_available);
     }
 
-    if (argResults?['install'] != null &&
-        argResults!['install'].toString().trim().isNotEmpty) {
+    if (argResults?['install'] == true) {
       list.add(CommandsFlutterArg.install);
     }
 
@@ -104,6 +103,28 @@ class CommandsFlutter extends Command<int> {
     return list.firstOrNull;
   }
 
+  Future<List<Map<String, dynamic>>> _getVersionAvailable() async {
+    List<Map<String, dynamic>> versions = [];
+
+    final result = await Process.run(
+      p.join(
+        pathSnap,
+        'scripts',
+        'flutter_versions_available.sh',
+      ),
+      [],
+    );
+
+    for (final version in result.stdout.toString().trim().split('\n')) {
+      versions.add({
+        'name': 'Flutter SDK: $version',
+        'version': version,
+      });
+    }
+
+    return versions;
+  }
+
   @override
   Future<int> run() async {
     switch (_getArg(argResults)) {
@@ -111,10 +132,20 @@ class CommandsFlutter extends Command<int> {
         await _versions_installed();
         break;
       case CommandsFlutterArg.versions_available:
-        await _versions_available();
+        await _versions_available(true);
         break;
       case CommandsFlutterArg.install:
-        await _install();
+        final version = Helper.getItem(
+          await _getVersionAvailable(),
+          'Flutter SDK',
+          false,
+          null,
+          _logger,
+        );
+        if (version == null) {
+          return ExitCode.usage.code;
+        }
+        await _install(version['version']);
         break;
       case CommandsFlutterArg.remove:
         await _remove();
@@ -147,14 +178,17 @@ class CommandsFlutter extends Command<int> {
     ]));
   }
 
-  Future<void> _versions_available() async {
+  Future<void> _versions_available(bool detail) async {
     final process = await Process.start(
       p.join(
         pathSnap,
         'scripts',
         'flutter_versions_available.sh',
       ),
-      [],
+      [
+        '-d',
+        detail.toString(),
+      ],
     );
     await stdout.addStream(StreamGroup.merge([
       process.stdout,
@@ -162,7 +196,7 @@ class CommandsFlutter extends Command<int> {
     ]));
   }
 
-  Future<void> _install() async {
+  Future<void> _install(String version) async {
     _logger
       ..info('The installation has started, please wait...')
       ..info('');
@@ -174,7 +208,7 @@ class CommandsFlutter extends Command<int> {
       ),
       [
         '-v',
-        argResults!['install'].toString(),
+        version,
       ],
     );
     await stdout.addStream(StreamGroup.merge([

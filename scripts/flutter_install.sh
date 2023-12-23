@@ -39,23 +39,12 @@ latest=$(curl -s https://gitlab.com/omprussia/flutter/flutter/-/raw/master/packa
 | sed 's/frameworkVersion//g')
 
 
-olds=($(curl -s "https://gitlab.com/api/v4/projects/48571227/repository/branches?per_page=50&regex=flutter-aurora-\d" \
-| grep -Po '"name":.*?[^\\]"' \
-| sed 's/"//g' \
-| sed 's/name:flutter-aurora-//g'))
-
 ## Get URL
 
 if [[ "$version" == "$latest" ]]; then
   BRANCH="master"
 else
-  for i in "${olds[@]}"
-  do
-      if [ "$version" == "$i" ] ; then
-          BRANCH="flutter-aurora-$version"
-          break;
-      fi
-  done
+  BRANCH="flutter-aurora-$version"
 fi
 
 if [[ -z $BRANCH ]]; then

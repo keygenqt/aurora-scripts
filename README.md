@@ -39,7 +39,7 @@ sudo apt update && sudo apt install curl git git-lfs unzip bzip2
 * flutter
   - versions-installed - Get list installed versions Flutter SDK.
   - versions-available - Get list available versions Flutter SDK.
-  - install - Install version Flutter SDK.
+  - install - Install Flutter SDK.
   - remove - Remove Flutter SDK.
   - embedder-version - Get version installed Flutter embedder.
   - embedder-install - Install embedder from Flutter SDK.
