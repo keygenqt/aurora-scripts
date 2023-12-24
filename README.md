@@ -39,7 +39,7 @@ aurora_cli/scripts/build.sh
 The second step is to build a snap package:
 
 ```shell
-aurora_cli/scripts/build.sh
+aurora_cli/scripts/snap.sh
 ```
 
 You can run the application with arguments using the following command:
