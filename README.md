@@ -28,6 +28,28 @@ Additional dependencies to work Flutter
 sudo apt update && sudo apt install curl git git-lfs unzip bzip2
 ```
 
+## Build
+
+You can build the Dart application with the following command from the root directory:
+
+```shell
+aurora_cli/scripts/build.sh
+```
+
+The second step is to build a snap package:
+
+```shell
+aurora_cli/scripts/build.sh
+```
+
+You can run the application with arguments using the following command:
+
+```shell
+aurora_cli/scripts/run.sh --version
+```
+
+To run build scripts you must have [Snapcraft](https://snapcraft.io/docs/installing-snapcraft) & [Dart](https://dart.dev/get-dart) installed.
+
 ## Features
 
 * psdk
