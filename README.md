@@ -53,27 +53,29 @@ To run build scripts you must have [Snapcraft](https://snapcraft.io/docs/install
 ## Features
 
 * psdk
-  - install - Install Aurora Platform SDK.
-  - remove - Remove Aurora Platform SDK.
+  - installed - Get list installed versions Platform SDK.
+  - available - Get list available versions Platform SDK.
+  - install - Install Platform SDK.
+  - remove - Remove Platform SDK.
   - validate - Validate RPM packages.
   - sign - Sign (with re-sign) packages.
-  - index - Select index key.
 * flutter
-  - versions-installed - Get list installed versions Flutter SDK.
-  - versions-available - Get list available versions Flutter SDK.
+  - installed - Get list installed versions Flutter SDK.
+  - available - Get list available versions Flutter SDK.
   - install - Install Flutter SDK.
   - remove - Remove Flutter SDK.
-  - embedder-version - Get version installed Flutter embedder.
-  - embedder-install - Install embedder from Flutter SDK.
+* embedder
+  - installed - Get list installed versions Flutter Embedder.
+  - available - Get list available versions Flutter Embedder.
+  - install - Install Flutter Embedder.
+  - remove - Remove Flutter Embedder.
 * device
   - ssh-copy - Add ssh key to device.
   - command - Execute the command on the device.
-  - upload - Upload files to Download directory device.
+  - upload - Upload file to Download directory device.
   - install - Install RPM package in device.
-  - run - Run application in device.
-  - firejail - Run application in device with firejail in container.
-  - firejail-dbus - Firejail for Aurora OS 5.0.
-  - index - Select index device.
+  - run - Run application in device in container.
+  - index - Select index.
   - all - Select all devices.
 
 ### License

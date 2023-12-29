@@ -4,31 +4,29 @@ import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
 import 'package:aurora_cli/cli_constants.dart';
 import 'package:aurora_cli/cli_di.dart';
+import 'package:aurora_cli/extension_stream.dart';
 import 'package:aurora_cli/helper.dart';
 import 'package:mason_logger/mason_logger.dart';
 
 import 'package:path/path.dart' as p;
-import 'package:async/async.dart' show StreamGroup;
 
 enum CommandsFlutterArg {
-  versions_installed,
-  versions_available,
+  installed,
+  available,
   install,
   remove,
-  embedder_version,
-  embedder_install
 }
 
 class CommandsFlutter extends Command<int> {
   CommandsFlutter() {
     argParser
       ..addFlag(
-        'versions-installed',
+        'installed',
         negatable: false,
         help: 'Get list installed versions Flutter SDK.',
       )
       ..addFlag(
-        'versions-available',
+        'available',
         negatable: false,
         help: 'Get list available versions Flutter SDK.',
       )
@@ -37,22 +35,10 @@ class CommandsFlutter extends Command<int> {
         negatable: false,
         help: 'Install Flutter SDK.',
       )
-      ..addOption(
-        'remove',
-        help: 'Remove Flutter SDK.',
-        valueHelp: 'flutter-version',
-        defaultsTo: null,
-      )
       ..addFlag(
-        'embedder-version',
+        'remove',
         negatable: false,
-        help: 'Get version installed Flutter embedder.',
-      )
-      ..addOption(
-        'embedder-install',
-        help: 'Install embedder from Flutter SDK.',
-        valueHelp: 'flutter-version',
-        defaultsTo: null,
+        help: 'Remove Flutter SDK.',
       );
   }
 
@@ -67,30 +53,20 @@ class CommandsFlutter extends Command<int> {
   CommandsFlutterArg? _getArg(ArgResults? args) {
     final list = [];
 
-    if (argResults?['versions-installed'] == true) {
-      list.add(CommandsFlutterArg.versions_installed);
+    if (argResults?['installed'] == true) {
+      list.add(CommandsFlutterArg.installed);
     }
 
-    if (argResults?['versions-available'] == true) {
-      list.add(CommandsFlutterArg.versions_available);
+    if (argResults?['available'] == true) {
+      list.add(CommandsFlutterArg.available);
     }
 
     if (argResults?['install'] == true) {
       list.add(CommandsFlutterArg.install);
     }
 
-    if (argResults?['remove'] != null &&
-        argResults!['remove'].toString().trim().isNotEmpty) {
+    if (argResults?['remove'] == true) {
       list.add(CommandsFlutterArg.remove);
-    }
-
-    if (argResults?['embedder-version'] == true) {
-      list.add(CommandsFlutterArg.embedder_version);
-    }
-
-    if (argResults?['embedder-install'] != null &&
-        argResults!['embedder-install'].toString().trim().isNotEmpty) {
-      list.add(CommandsFlutterArg.embedder_install);
     }
 
     if (list.length > 1) {
@@ -103,168 +79,96 @@ class CommandsFlutter extends Command<int> {
     return list.firstOrNull;
   }
 
-  Future<List<Map<String, dynamic>>> _getVersionAvailable() async {
-    List<Map<String, dynamic>> versions = [];
-
-    final result = await Process.run(
-      p.join(
-        pathSnap,
-        'scripts',
-        'flutter_versions_available.sh',
-      ),
-      [],
-    );
-
-    for (final version in result.stdout.toString().trim().split('\n')) {
-      versions.add({
-        'name': 'Flutter SDK: $version',
-        'version': version,
-      });
-    }
-
-    return versions;
-  }
-
   @override
   Future<int> run() async {
+    Stream<List<int>>? stream;
     switch (_getArg(argResults)) {
-      case CommandsFlutterArg.versions_installed:
-        await _versions_installed();
+      case CommandsFlutterArg.installed:
+        stream = await _installed(logger: _logger);
         break;
-      case CommandsFlutterArg.versions_available:
-        await _versions_available(true);
+      case CommandsFlutterArg.available:
+        stream = await _available(logger: _logger);
         break;
       case CommandsFlutterArg.install:
-        final version = Helper.getItem(
-          await _getVersionAvailable(),
-          'Flutter SDK',
-          false,
-          null,
-          _logger,
-        );
-        if (version == null) {
-          return ExitCode.usage.code;
-        }
-        await _install(version['version']);
+        stream = await _install(logger: _logger);
         break;
       case CommandsFlutterArg.remove:
-        await _remove();
+        stream = await _remove(logger: _logger);
         break;
-      case CommandsFlutterArg.embedder_version:
-        await _embedder_version();
-        break;
-      case CommandsFlutterArg.embedder_install:
-        await _embedder_install();
-        break;
-
       default:
         return ExitCode.usage.code;
     }
-    return ExitCode.success.code;
+    if (stream == null) {
+      return ExitCode.usage.code;
+    } else {
+      await stdout.addStream(stream);
+      return ExitCode.success.code;
+    }
   }
 
-  Future<void> _versions_installed() async {
-    final process = await Process.start(
+  Future<Stream<List<int>>?> _installed(
+      {Logger? logger = null, bool data = false}) async {
+    return await Helper.processStream(
       p.join(
         pathSnap,
         'scripts',
-        'flutter_versions_installed.sh',
+        'flutter_installed.sh',
       ),
-      [],
+      environment: {'DATA_ONLY': data.toString()},
     );
-    await stdout.addStream(StreamGroup.merge([
-      process.stdout,
-      process.stderr,
-    ]));
   }
 
-  Future<void> _versions_available(bool detail) async {
-    final process = await Process.start(
+  Future<Stream<List<int>>?> _available(
+      {Logger? logger = null, bool data = false}) async {
+    return await Helper.processStream(
       p.join(
         pathSnap,
         'scripts',
-        'flutter_versions_available.sh',
+        'flutter_available.sh',
       ),
-      [
-        '-d',
-        detail.toString(),
-      ],
+      environment: {'DATA_ONLY': data.toString()},
     );
-    await stdout.addStream(StreamGroup.merge([
-      process.stdout,
-      process.stderr,
-    ]));
   }
 
-  Future<void> _install(String version) async {
-    _logger
-      ..info('The installation has started, please wait...')
-      ..info('');
-    final process = await Process.start(
+  Future<Stream<List<int>>?> _install({Logger? logger = null}) async {
+    final versions = await (await _available(data: true))?.loadList() ?? [];
+    final index = Helper.indexQuery(versions);
+    switch (index) {
+      case IndexErrors.emptyList:
+        logger?.info('Not found awailable Flutter SDK.');
+        return null;
+      case IndexErrors.wrongIndex:
+        logger?.info('You specified the wrong index Flutter SDK.');
+        return null;
+    }
+    return await Helper.processStream(
       p.join(
         pathSnap,
         'scripts',
         'flutter_install.sh',
       ),
-      [
-        '-v',
-        version,
-      ],
+      arguments: ['-v', versions[index]],
     );
-    await stdout.addStream(StreamGroup.merge([
-      process.stdout,
-      process.stderr,
-    ]));
   }
 
-  Future<void> _remove() async {
-    final process = await Process.start(
+  Future<Stream<List<int>>?> _remove({Logger? logger = null}) async {
+    final versions = await (await _installed(data: true))?.loadList() ?? [];
+    final index = Helper.indexQuery(versions);
+    switch (index) {
+      case IndexErrors.emptyList:
+        logger?.info('Not found installed Flutter SDK.');
+        return null;
+      case IndexErrors.wrongIndex:
+        logger?.info('You specified the wrong index Flutter SDK.');
+        return null;
+    }
+    return await Helper.processStream(
       p.join(
         pathSnap,
         'scripts',
         'flutter_remove.sh',
       ),
-      [
-        '-v',
-        argResults!['remove'].toString(),
-      ],
+      arguments: ['-v', versions[index]],
     );
-    await stdout.addStream(StreamGroup.merge([
-      process.stdout,
-      process.stderr,
-    ]));
-  }
-
-  Future<void> _embedder_version() async {
-    final process = await Process.start(
-      p.join(
-        pathSnap,
-        'scripts',
-        'flutter_embedder_version.sh',
-      ),
-      [],
-    );
-    await stdout.addStream(StreamGroup.merge([
-      process.stdout,
-      process.stderr,
-    ]));
-  }
-
-  Future<void> _embedder_install() async {
-    final process = await Process.start(
-      p.join(
-        pathSnap,
-        'scripts',
-        'flutter_embedder_install.sh',
-      ),
-      [
-        '-v',
-        argResults!['embedder-install'].toString(),
-      ],
-    );
-    await stdout.addStream(StreamGroup.merge([
-      process.stdout,
-      process.stderr,
-    ]));
   }
 }

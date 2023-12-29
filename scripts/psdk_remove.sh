@@ -2,9 +2,9 @@
 
 source $(dirname "$0")/snap_init.sh
 
-#############################
-## Remove PlatformSDK from PC
-#############################
+######################
+## Remove Platform SDK
+######################
 
 ## Get params keys
 
@@ -18,23 +18,24 @@ while getopts f: flag; do
   esac
 done
 
-## Check params keys
-
-if [ -z "$folder" ]; then
-  echo "Specify folder PSDK!"
-  exit 1
+if [[ -z $folder ]]; then
+  echo 'Specify folder!';
+  exit;
 fi
 
 ## Check psdk
 
 if [ ! -d "$folder" ]; then
     echo
-    echo "Platform SDK ($folder) not found!"
+    echo "Platfrom SDK not found"
     exit 1
 fi
 
 ## Remove
-sudo rm -rf "$folder"
+sudo rm -rf $folder
+
+## Clear .bashrc
+sed -i "/$(echo "$folder" | sed 's/\//\\\//g' | sed 's/\./\\./g')/d" "$HOME/.bashrc"
 
 echo
 echo "Platform SDK successfully removed!"

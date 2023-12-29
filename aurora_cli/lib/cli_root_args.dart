@@ -3,6 +3,7 @@ import 'package:args/command_runner.dart';
 import 'package:aurora_cli/cli_constants.dart';
 import 'package:aurora_cli/cli_di.dart';
 import 'package:aurora_cli/commands_device.dart';
+import 'package:aurora_cli/commands_embedder.dart';
 import 'package:aurora_cli/commands_flutter.dart';
 import 'package:aurora_cli/commands_psdk.dart';
 import 'package:mason_logger/mason_logger.dart';
@@ -13,10 +14,13 @@ class CLIRootArgs extends CommandRunner<int> {
             'A collection of scripts to help the Aurora OS developer.') {
     // Init di
     initDI();
+
     // Add sub commands
-    addCommand(CommandsPsdk());
-    addCommand(CommandsFlutter());
     addCommand(CommandsDevice());
+    addCommand(CommandsFlutter());
+    addCommand(CommandsFlutterEmbedder());
+    addCommand(CommandsPsdk());
+
     // Add root options and flags
     argParser
       ..addFlag(

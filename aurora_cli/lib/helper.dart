@@ -1,57 +1,58 @@
 import 'dart:io';
 
-import 'package:aurora_cli/cli_constants.dart';
+import 'package:async/async.dart';
+import 'package:aurora_cli/cli_di.dart';
 import 'package:mason_logger/mason_logger.dart';
 
+enum IndexErrors {
+  emptyList,
+  wrongIndex,
+}
+
 class Helper {
-  static Map<String, dynamic>? getItem(
-    List<Map<String, dynamic>> data,
-    String keyName,
-    bool isConfig,
-    String? index,
-    Logger logger,
-  ) {
-    if (data.isEmpty) {
-      logger.info('Not a single $keyName was found!');
-      if (isConfig) {
-        logger.info(
-            'Check configuration file: ${pathUserCommon}/configuration.yaml');
-      }
-      return null;
+  static dynamic indexQuery(List<dynamic> list, {String? index = null}) {
+    Logger logger = getIt<Logger>();
+
+    if (list.isEmpty) {
+      return IndexErrors.emptyList;
     }
 
     final _index = (int.tryParse(index ?? '') ?? 0) - 1;
 
-    if (index != null && (_index < 0 || _index >= data.length)) {
-      logger.info('You specified the wrong index!');
-      return null;
+    if (index != null && (_index < 0 || _index >= list.length)) {
+      return IndexErrors.wrongIndex;
     }
 
-    if (_index >= 0 && _index < data.length) {
-      return data[_index];
+    if (_index >= 0 && _index < list.length) {
+      return _index;
     }
 
-    logger
-      ..info('Select an available option:')
-      ..info('');
+    logger.info('Select an available option:\n');
 
-    for (final (_index, item) in data.indexed) {
-      logger.info('${_index + 1}. ${item['name']}');
+    for (final (_index, item) in list.indexed) {
+      logger.info('${_index + 1}. ${item}');
     }
 
-    logger
-      ..info('')
-      ..info('Enter the index of the $keyName:');
+    logger.info('\nEnter the index:');
 
     final input = (int.tryParse(stdin.readLineSync() ?? '') ?? 0) - 1;
 
     logger.info('');
 
-    if (input >= 0 && input < data.length) {
-      return data[input];
+    if (input >= 0 && input < list.length) {
+      return input;
     } else {
-      logger.info('You specified the wrong index!');
-      return null;
+      return IndexErrors.wrongIndex;
     }
+  }
+
+  static Future<Stream<List<int>>> processStream(String executable,
+      {List<String>? arguments, Map<String, String>? environment}) async {
+    final process = await Process.start(executable, arguments ?? [],
+        environment: environment);
+    return StreamGroup.merge([
+      process.stdout,
+      process.stderr,
+    ]);
   }
 }

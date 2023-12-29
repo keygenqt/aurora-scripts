@@ -62,12 +62,8 @@ class Configuration {
           for (final target in (data['targets'] as YamlList)) {
             targets.add(target.toString());
           }
-
-          final name =
-              'Platform SDK ${p.basename(data['chroot']!).split('-').elementAt(1)}';
-
           result.add({
-            'name': name,
+            'version': p.basename(data['chroot']!).split('-').elementAt(1),
             'chroot': data['chroot']!,
             'tooling': data['tooling']!,
             'targets': targets,

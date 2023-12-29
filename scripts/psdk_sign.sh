@@ -9,7 +9,7 @@ source $(dirname "$0")/snap_init.sh
 ## Check psdk
 
 if [ -z "$PSDK_DIR" ] || [ ! -d "$PSDK_DIR" ]; then
-    echo "Not found PSDK. Install command - 'aurora-cli psdk --install'"
+    echo "Not found environment PSDK_DIR. Install command - 'aurora-cli psdk --install'"
     echo "See more: https://developer.auroraos.ru/doc/software_development/psdk"
     exit 1
 fi
@@ -53,9 +53,7 @@ fi
 ## Aurora Platform SDK requires superuser rights
 
 if ! [ -f "/etc/sudoers.d/mer-sdk-chroot" ]; then
-  sudo echo ''
-else
-  echo
+  sudo echo 'Accessed...'
 fi
 
 ## Sign array

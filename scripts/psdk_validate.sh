@@ -9,7 +9,7 @@ source $(dirname "$0")/snap_init.sh
 ## Check psdk
 
 if [ -z "$PSDK_DIR" ] || [ ! -d "$PSDK_DIR" ]; then
-    echo "Not found PSDK. Install command - 'aurora-cli psdk --install'"
+    echo "Not found environment PSDK_DIR. Install command - 'aurora-cli psdk --install'"
     echo "See more: https://developer.auroraos.ru/doc/software_development/psdk"
     exit 1
 fi
@@ -51,12 +51,15 @@ fi
 
 for file in "${files[@]}"
 do
-
   if [ -f "$file" ]; then
     echo
     echo "Validate file: '$file'"
+
+    FILENAME=$(basename -- "$file" | sed 's/.rpm//g' | sed 's/.RPM//g' )
+    TARGET=$($PSDK_DIR/sdk-chroot sdk-assistant list | grep "${FILENAME##*.}" | head -n 1 | sed 's/└*─//g' | sed 's/├//g')
+
     echo
-    $PSDK_DIR/sdk-chroot sb2 -m emulate rpm-validator "$file"
+    $PSDK_DIR/sdk-chroot sb2 -t $TARGET -m emulate rpm-validator "$file"
   else
     if [ ${#files[@]} == 1 ]; then
         echo "No files found";

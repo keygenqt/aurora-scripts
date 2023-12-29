@@ -8,14 +8,14 @@ source $(dirname "$0")/snap_init.sh
 
 ## Get params keys
 
-while getopts n:c:t:l: flag; do
+while getopts v:c:t:l: flag; do
   case "${flag}" in
-  n) name=${OPTARG} ;;
+  v) version=${OPTARG} ;;
   c) chroot=${OPTARG} ;;
   t) tooling=${OPTARG} ;;
   l) listTargets=${OPTARG} ;;
   *)
-    echo "usage: $0 [-c] [-t] [-l]" >&2
+    echo "usage: $0 [-v] [-c] [-t] [-l]" >&2
     exit 1
     ;;
   esac
@@ -23,7 +23,7 @@ done
 
 ## Check params keys
 
-if [ -z "$name" ] || [ -z "$chroot" ] || [ -z "$tooling" ]; then
+if [ -z "$version" ] || [ -z "$chroot" ] || [ -z "$tooling" ] || [ -z "$listTargets" ]; then
   echo "Specify name, links chroot and tooling!"
   exit 1
 fi
@@ -31,8 +31,8 @@ fi
 ## Variables
 
 USERNAME=$(basename "$HOME")
-VERSION=${name##* }
-FOLDER_NAME="Aurora_${name// /_}"
+VERSION="$version"
+FOLDER_NAME="Aurora_Platform_SDK_$version"
 FOLDER_PATH="$HOME/$FOLDER_NAME"
 
 URL_CHROOT="$chroot"
@@ -42,7 +42,7 @@ IFS=';' read -ra URL_TARGETS <<< "$listTargets"
 ## Check psdk
 
 if [ -d "$FOLDER_PATH" ]; then
-  echo "$name already installed: $FOLDER_PATH"
+  echo "Already installed: $FOLDER_PATH"
   exit 1
 fi
 
@@ -64,6 +64,7 @@ mkdir -pv "$FOLDER_PATH/sdks/aurora_psdk"
   done
 
 } || {
+  rm -rf "$FOLDER_PATH"
   echo 'Error download!'
   exit 1;
 }
@@ -90,36 +91,9 @@ do
     "$FOLDER_PATH/tarballs/$(basename "$url")"
 done
 
-## Update bashrc
-
-if ! grep "export PSDK_DIR=" "$HOME/.bashrc" > /dev/null; then
-  echo "export PSDK_DIR=$FOLDER_PATH/sdks/aurora_psdk" >> "$HOME/.bashrc"
-fi
-
-alias="aurora_psdk"
-
-if ! grep "alias aurora_psdk=" "$HOME/.bashrc" > /dev/null; then
-  echo "alias $alias=$FOLDER_PATH/sdks/aurora_psdk/sdk-chroot" >> "$HOME/.bashrc"
-else
-  alias="aurora_psdk_$VERSION"
-  if ! grep "alias $alias=" "$HOME/.bashrc" > /dev/null; then
-    echo "alias $alias=$FOLDER_PATH/sdks/aurora_psdk/sdk-chroot" >> "$HOME/.bashrc"
-  fi
-fi
-
-if [[ "$VERSION" == *"5."* ]]; then
-  if ! grep "[AuroraPlatformSDK]" "$HOME/.bashrc" > /dev/null; then
-    # shellcheck disable=SC2016
-    echo 'if [[ $AURORA_SDK ]]; then PS1="[AuroraPlatformSDK]$ "; fi' >> "$HOME/.bashrc"
-  fi
-else
-  rm -rf "$HOME"/.mersdk.profile
-  echo 'PS1="[AuroraPlatformSDK]$ "' > "$HOME/.mersdk.profile"
-fi
-
 ## Clear tarballs folder with downloads
 
-rm -rf "$FOLDER"/tarballs/
+rm -rf "$FOLDER/tarballs"
 
 ## Disable sudo psdk
 
@@ -137,6 +111,32 @@ $USERNAME ALL=(ALL) NOPASSWD: $FOLDER_PATH/sdks/aurora_psdk/sdk-chroot
 Defaults!$FOLDER_PATH/sdks/aurora_psdk/sdk-chroot env_keep += "SSH_AGENT_PID SSH_AUTH_SOCK"
 
 EOF
+fi
+
+## Update PS1
+
+if ! grep "AURORA_SDK" "$HOME/.bashrc" > /dev/null; then
+  echo 'if [[ $AURORA_SDK ]]; then PS1="[AuroraPlatformSDK]$ "; fi' >> "$HOME/.bashrc"
+fi
+
+if [ ! -f "$HOME/.mersdk.profile" ] && [[ "$VERSION" == *"4."* ]]; then
+  echo 'PS1="[AuroraPlatformSDK]$ "' > "$HOME/.mersdk.profile"
+fi
+
+## Update bashrc
+
+if ! grep "PSDK_DIR=" "$HOME/.bashrc" > /dev/null; then
+  echo "export PSDK_DIR=$FOLDER_PATH/sdks/aurora_psdk" >> "$HOME/.bashrc"
+fi
+
+if ! grep "aurora_psdk_$VERSION=" "$HOME/.bashrc" > /dev/null; then
+  alias="aurora_psdk_$VERSION"
+  echo "alias aurora_psdk_$VERSION=$FOLDER_PATH/sdks/aurora_psdk/sdk-chroot" >> "$HOME/.bashrc"
+fi
+
+if ! grep "aurora_psdk=" "$HOME/.bashrc" > /dev/null; then
+  alias="aurora_psdk"
+  echo "alias aurora_psdk=$FOLDER_PATH/sdks/aurora_psdk/sdk-chroot" >> "$HOME/.bashrc"
 fi
 
 echo
