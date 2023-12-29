@@ -11,7 +11,7 @@ sudo snap remove aurora-cli
 snapcraft -v
 
 # Install
-sudo snap install aurora-cli_1.3.0_amd64.snap --devmode --dangerous
+sudo snap install aurora-cli_1.3.1_amd64.snap --devmode --dangerous
 
 # Upload
 # snapcraft upload --release=candidate <snap>
