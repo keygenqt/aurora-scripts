@@ -3,41 +3,54 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
 import 'package:aurora_cli/cli_configuration.dart';
+import 'package:aurora_cli/extension_stream.dart';
 import 'package:aurora_cli/cli_constants.dart';
 import 'package:aurora_cli/cli_di.dart';
+import 'package:aurora_cli/helper.dart';
 import 'package:mason_logger/mason_logger.dart';
 
 import 'package:path/path.dart' as p;
-import 'package:async/async.dart' show StreamGroup;
 
-enum CommandsPsdkArg { sign, validate, install, remove }
+enum CommandsPsdkArg {
+  installed,
+  available,
+  install,
+  remove,
+  validate,
+  sign,
+}
 
 class CommandsPsdk extends Command<int> {
   CommandsPsdk() {
     argParser
-      ..addOption(
-        'sign',
-        help: 'Sign ( with re-sign) packages.',
-        defaultsTo: null,
+      ..addFlag(
+        'installed',
+        negatable: false,
+        help: 'Get list installed versions Platform SDK.',
+      )
+      ..addFlag(
+        'available',
+        negatable: false,
+        help: 'Get list available versions Platform SDK.',
+      )
+      ..addFlag(
+        'install',
+        negatable: false,
+        help: 'Install Platform SDK.',
+      )
+      ..addFlag(
+        'remove',
+        negatable: false,
+        help: 'Remove Platform SDK.',
       )
       ..addOption(
         'validate',
         help: 'Validate RPM packages.',
         defaultsTo: null,
       )
-      ..addFlag(
-        'install',
-        negatable: false,
-        help: 'Install Aurora Platform SDK version 4.0.2.303.',
-      )
-      ..addFlag(
-        'remove',
-        negatable: false,
-        help: 'Remove Aurora Platform SDK.',
-      )
       ..addOption(
-        'index',
-        help: 'Select index.',
+        'sign',
+        help: 'Sign (with re-sign) packages.',
         defaultsTo: null,
       );
   }
@@ -50,53 +63,16 @@ class CommandsPsdk extends Command<int> {
 
   Logger get _logger => getIt<Logger>();
 
-  Map<String, dynamic>? _getKey() {
-    final keys = Configuration.keys();
-
-    if (keys.isEmpty) {
-      _logger.info('Not a single key was found!');
-      _logger.info(
-          'Check configuration file: ${pathUserCommon}/configuration.yaml');
-      return null;
-    }
-
-    final index = (int.tryParse(argResults?['index'] ?? '') ?? 0) - 1;
-
-    if (argResults?['index'] != null && (index < 0 || index >= keys.length)) {
-      _logger.info('You specified the wrong index!');
-      return null;
-    }
-
-    if (index >= 0 && index < keys.length) {
-      return keys[index];
-    }
-
-    _logger
-      ..info('Keys that do this were found:')
-      ..info('');
-
-    for (final (index, key) in keys.indexed) {
-      _logger.info('${index + 1}. Name: ${key['name']}');
-    }
-
-    _logger
-      ..info('')
-      ..info('Enter the index of the key:');
-
-    final input = (int.tryParse(stdin.readLineSync() ?? '') ?? 0) - 1;
-
-    _logger.info('');
-
-    if (input >= 0 && input < keys.length) {
-      return keys[input];
-    } else {
-      _logger.info('You specified the wrong index!');
-      return null;
-    }
-  }
-
   CommandsPsdkArg? _getArg(ArgResults? args) {
     final list = [];
+
+    if (argResults?['installed'] == true) {
+      list.add(CommandsPsdkArg.installed);
+    }
+
+    if (argResults?['available'] == true) {
+      list.add(CommandsPsdkArg.available);
+    }
 
     if (argResults?['install'] == true) {
       list.add(CommandsPsdkArg.install);
@@ -111,7 +87,8 @@ class CommandsPsdk extends Command<int> {
       list.add(CommandsPsdkArg.validate);
     }
 
-    if (argResults?['sign'] != null) {
+    if (argResults?['sign'] != null &&
+        argResults!['sign'].toString().trim().isNotEmpty) {
       list.add(CommandsPsdkArg.sign);
     }
 
@@ -127,100 +104,161 @@ class CommandsPsdk extends Command<int> {
 
   @override
   Future<int> run() async {
+    Stream<List<int>>? stream;
     switch (_getArg(argResults)) {
-      case CommandsPsdkArg.sign:
-        final key = _getKey();
-        if (key == null) {
-          return ExitCode.usage.code;
-        }
-        await _sign(key);
+      case CommandsPsdkArg.installed:
+        stream = await installed(logger: _logger);
         break;
-      case CommandsPsdkArg.validate:
-        await _validate();
-        break;
+      case CommandsPsdkArg.available:
+        _available(logger: _logger);
+        return ExitCode.success.code;
       case CommandsPsdkArg.install:
-        await _install();
+        stream = await _install(logger: _logger);
         break;
       case CommandsPsdkArg.remove:
-        await _remove();
+        stream = await _remove(logger: _logger);
+        break;
+      case CommandsPsdkArg.validate:
+        stream = await _validate(logger: _logger);
+        break;
+      case CommandsPsdkArg.sign:
+        stream = await _sign(logger: _logger);
         break;
       default:
         return ExitCode.usage.code;
     }
-    return ExitCode.success.code;
+    if (stream == null) {
+      return ExitCode.usage.code;
+    } else {
+      await stdout.addStream(stream);
+      return ExitCode.success.code;
+    }
   }
 
-  Future<void> _sign(Map<String, dynamic> key) async {
-    final process = await Process.start(
+  Future<Stream<List<int>>?> installed(
+      {Logger? logger = null, bool data = false}) async {
+    return await Helper.processStream(
       p.join(
         pathSnap,
         'scripts',
-        'psdk_sign.sh',
+        'psdk_installed.sh',
       ),
-      [
-        '-k',
-        key['key']!,
-        '-c',
-        key['cert']!,
-        '-p',
-        argResults!['sign'].toString(),
-      ],
+      environment: {'DATA_ONLY': data.toString()},
     );
-    await stdout.addStream(StreamGroup.merge([
-      process.stdout,
-      process.stderr,
-    ]));
   }
 
-  Future<void> _validate() async {
-    final process = await Process.start(
-      p.join(
-        pathSnap,
-        'scripts',
-        'psdk_validate.sh',
-      ),
-      [
-        '-p',
-        argResults!['validate'].toString(),
-      ],
-    );
-    await stdout.addStream(StreamGroup.merge([
-      process.stdout,
-      process.stderr,
-    ]));
+  void _available({Logger? logger = null}) async {
+    final confPSDK = Configuration.psdk();
+    if (confPSDK.isEmpty) {
+      logger
+        ?..info('Not found installed Platfrom SDK.')
+        ..info('Platfrom SDK must be specified in the configuration file.')
+        ..info('Configuration file: ${pathUserCommon}/configuration.yaml');
+    } else {
+      logger
+        ?..info('Available Platfrom SDK versions:\n')
+        ..info(confPSDK.map((e) => e['version']).toList().join('\n'));
+    }
   }
 
-  Future<void> _install() async {
-    _logger
-      ..info('The installation has started, please wait.')
-      ..info("It's not very fast, sometimes data doesn't download quickly...")
-      ..info('');
-    final process = await Process.start(
+  Future<Stream<List<int>>?> _install({Logger? logger = null}) async {
+    final config = Configuration.psdk();
+    final versions = config.map((e) => e['version']).toList();
+    final index = Helper.indexQuery(versions);
+    switch (index) {
+      case IndexErrors.emptyList:
+        logger?.info('Not found awailable Platform SDK.');
+        return null;
+      case IndexErrors.wrongIndex:
+        logger?.info('You specified the wrong index Platform SDK.');
+        return null;
+    }
+    return await Helper.processStream(
       p.join(
         pathSnap,
         'scripts',
         'psdk_install.sh',
       ),
-      [],
+      arguments: [
+        '-v',
+        config[index]['version'],
+        '-c',
+        config[index]['chroot'],
+        '-t',
+        config[index]['tooling'],
+        '-l',
+        config[index]['targets'].join(';'),
+      ],
     );
-    await stdout.addStream(StreamGroup.merge([
-      process.stdout,
-      process.stderr,
-    ]));
   }
 
-  Future<void> _remove() async {
-    final process = await Process.start(
+  Future<Stream<List<int>>?> _remove({Logger? logger = null}) async {
+    final versions = await (await installed(data: true))?.loadList() ?? [];
+
+    if (versions.isNotEmpty) {
+      logger?.info('\nBe careful, the directory will be deleted!!!\n');
+    }
+
+    final index = Helper.indexQuery(
+        versions.map((e) => p.basename(e).replaceAll('_', ' ')).toList());
+    switch (index) {
+      case IndexErrors.emptyList:
+        logger?.info('Not found installed Platform SDK.');
+        return null;
+      case IndexErrors.wrongIndex:
+        logger?.info('You specified the wrong index Platform SDK.');
+        return null;
+    }
+    return await Helper.processStream(
       p.join(
         pathSnap,
         'scripts',
         'psdk_remove.sh',
       ),
-      [],
+      arguments: ['-f', versions[index]],
     );
-    await stdout.addStream(StreamGroup.merge([
-      process.stdout,
-      process.stderr,
-    ]));
+  }
+
+  Future<Stream<List<int>>?> _validate({Logger? logger = null}) async {
+    return await Helper.processStream(
+      p.join(
+        pathSnap,
+        'scripts',
+        'psdk_validate.sh',
+      ),
+      arguments: [
+        '-p',
+        argResults!['validate'].toString(),
+      ],
+    );
+  }
+
+  Future<Stream<List<int>>?> _sign({Logger? logger = null}) async {
+    final config = Configuration.keys();
+    final names = config.map((e) => e['name']).toList();
+    final index = Helper.indexQuery(names);
+    switch (index) {
+      case IndexErrors.emptyList:
+        logger?.info('Not found keys.');
+        return null;
+      case IndexErrors.wrongIndex:
+        logger?.info('You specified the wrong index key.');
+        return null;
+    }
+    return await Helper.processStream(
+      p.join(
+        pathSnap,
+        'scripts',
+        'psdk_sign.sh',
+      ),
+      arguments: [
+        '-k',
+        config[index]['key']!,
+        '-c',
+        config[index]['cert']!,
+        '-p',
+        argResults!['sign'].toString(),
+      ],
+    );
   }
 }

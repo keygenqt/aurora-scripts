@@ -2,9 +2,9 @@
 
 source $(dirname "$0")/snap_init.sh
 
-################################
-## Run application on the device
-################################
+#############################################
+## Run application on the device in container
+#############################################
 
 ## Get params keys
 
@@ -27,9 +27,34 @@ if [ -z "$ip" ] || [ -z "$port" ] ||  [ -z "$application" ]; then
   exit 1
 fi
 
-## Run app
 if [[ $ip == *"AuroraOS"* ]]; then
-  ssh -i $HOME/AuroraOS/vmshare/ssh/private_keys/sdk -p $port defaultuser@localhost "/usr/bin/$application"
+  version=$(ssh -i $HOME/AuroraOS/vmshare/ssh/private_keys/sdk -p $port defaultuser@localhost "cat /etc/os-release" | grep VERSION= | sed -z 's/"//g')
 else
-  ssh -p "$port" defaultuser@"$ip" "/usr/bin/$application"
+  version=$(ssh -p "$port" "defaultuser@$ip" "cat /etc/os-release" | grep VERSION= | sed -z 's/"//g')
+fi
+
+## Run app in container 4+
+
+if [[ "$version" == *"VERSION=4."* ]]; then
+
+  if [[ $ip == *"AuroraOS"* ]]; then
+    ssh -i $HOME/AuroraOS/vmshare/ssh/private_keys/sdk -p $port defaultuser@localhost "invoker --type=qt5 $application"
+  else
+    ssh -p "$port" defaultuser@"$ip" "invoker --type=qt5 $application"
+  fi
+fi
+
+## Run app in container 5+
+
+if [[ "$version" == *"VERSION=5."* ]]; then
+
+  app="{'preferredHandler': <'$application'>}"
+  run="gdbus call -e -d ru.omp.RuntimeManager -o /ru/omp/RuntimeManager/Intents1 -m ru.omp.RuntimeManager.Intents1.InvokeIntent Start \"$app\" \"{}\""
+
+  if [[ $ip == *"AuroraOS"* ]]; then
+    ssh -i $HOME/AuroraOS/vmshare/ssh/private_keys/sdk -p $port defaultuser@localhost "$run"
+  else
+    ssh -p "$port" defaultuser@"$ip" "$run"
+  fi
+
 fi

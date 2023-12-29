@@ -3,7 +3,7 @@
 source $(dirname "$0")/snap_init.sh
 
 ###############################
-## Remove Flutter for Aurora OS
+## Remove Flutter for OS Aurora
 ###############################
 
 ## Get params keys
@@ -18,7 +18,10 @@ while getopts v: flag; do
   esac
 done
 
-## Variables
+if [[ -z $version ]]; then
+  echo 'Specify version!';
+  exit;
+fi
 
 FOLDER="$HOME/.local/opt/flutter-$version"
 
@@ -31,8 +34,10 @@ if [ ! -d "$FOLDER" ]; then
 fi
 
 ## Remove
-
 rm -rf $FOLDER
+
+## Clear .bashrc
+sed -i "/$(echo "$FOLDER" | sed 's/\//\\\//g' | sed 's/\./\\./g')/d" "$HOME/.bashrc"
 
 echo
 echo "Flutter for Aurora OS successfully removed!"

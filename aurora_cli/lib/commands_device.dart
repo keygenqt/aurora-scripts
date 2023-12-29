@@ -5,10 +5,10 @@ import 'package:args/command_runner.dart';
 import 'package:aurora_cli/cli_configuration.dart';
 import 'package:aurora_cli/cli_constants.dart';
 import 'package:aurora_cli/cli_di.dart';
+import 'package:aurora_cli/helper.dart';
 import 'package:mason_logger/mason_logger.dart';
 
 import 'package:path/path.dart' as p;
-import 'package:async/async.dart' show StreamGroup;
 
 enum CommandsDeviceArg {
   ssh_copy,
@@ -16,8 +16,6 @@ enum CommandsDeviceArg {
   upload,
   install,
   run,
-  firejail,
-  firejail_dbus
 }
 
 class CommandsDevice extends Command<int> {
@@ -45,17 +43,7 @@ class CommandsDevice extends Command<int> {
       )
       ..addOption(
         'run',
-        help: 'Run application in device.',
-        defaultsTo: null,
-      )
-      ..addOption(
-        'firejail',
-        help: 'Run application in device with firejail in container.',
-        defaultsTo: null,
-      )
-      ..addOption(
-        'firejail-dbus',
-        help: 'Firejail for Aurora OS 5.0.',
+        help: 'Run application in device in container.',
         defaultsTo: null,
       )
       ..addOption(
@@ -78,72 +66,23 @@ class CommandsDevice extends Command<int> {
 
   Logger get _logger => getIt<Logger>();
 
-  Future<List<Map<String, dynamic>>> _getDevice() async {
+  Future<List<Map<String, dynamic>>> _getDevices() async {
     final devices = Configuration.devices();
-
     String home = Platform.environment['HOME']!;
-
     if (Platform.environment.containsKey('SNAP_USER_COMMON')) {
       home = '${Platform.environment['SNAP_USER_COMMON']}/../../..';
     }
-
     final emulator =
         await Directory('$home/AuroraOS/emulator/').listSync().firstOrNull;
-
     if (emulator != null && argResults?['ssh-copy'] != true) {
       devices.insert(0, {
+        'name': p.basename(emulator.path),
         'ip': p.basename(emulator.path),
         'port': '2223',
         'pass': '-',
       });
     }
-
-    if (devices.isEmpty) {
-      _logger.info('Not a single device was found!');
-      _logger.info(
-          'Check configuration file: ${pathUserCommon}/configuration.yaml');
-      return [];
-    }
-
-    if (argResults?['all'] == true) {
-      return devices;
-    }
-
-    final index = (int.tryParse(argResults?['index'] ?? '') ?? 0) - 1;
-
-    if (argResults?['index'] != null &&
-        (index < 0 || index >= devices.length)) {
-      _logger.info('You specified the wrong index!');
-      return [];
-    }
-
-    if (index >= 0 && index < devices.length) {
-      _logger.info('');
-      return [devices[index]];
-    }
-
-    _logger
-      ..info('Devices that do this were found:')
-      ..info('');
-
-    for (final (index, device) in devices.indexed) {
-      _logger.info('${index + 1}. ${device['ip']}');
-    }
-
-    _logger
-      ..info('')
-      ..info('Enter the index of the device:');
-
-    final input = (int.tryParse(stdin.readLineSync() ?? '') ?? 0) - 1;
-
-    _logger.info('');
-
-    if (input >= 0 && input < devices.length) {
-      return [devices[input]];
-    } else {
-      _logger.info('You specified the wrong index!');
-      return [];
-    }
+    return devices;
   }
 
   CommandsDeviceArg? _getArg(ArgResults? args) {
@@ -173,16 +112,6 @@ class CommandsDevice extends Command<int> {
       list.add(CommandsDeviceArg.run);
     }
 
-    if (argResults?['firejail'] != null &&
-        argResults!['firejail'].toString().trim().isNotEmpty) {
-      list.add(CommandsDeviceArg.firejail);
-    }
-
-    if (argResults?['firejail-dbus'] != null &&
-        argResults!['firejail-dbus'].toString().trim().isNotEmpty) {
-      list.add(CommandsDeviceArg.firejail_dbus);
-    }
-
     if (list.length > 1) {
       _logger.info('Only one flag at a time!');
       list.clear();
@@ -196,9 +125,28 @@ class CommandsDevice extends Command<int> {
 
   @override
   Future<int> run() async {
+    Stream<List<int>>? stream;
     final arg = _getArg(argResults);
     if (arg != null) {
-      final devices = await _getDevice();
+      final devices = await _getDevices();
+
+      if (argResults?['all'] != true) {
+        final index = Helper.indexQuery(
+          devices.map((e) => e['name']).toList(),
+          index: argResults?['index'],
+        );
+        switch (index) {
+          case IndexErrors.emptyList:
+            _logger.info('Not found installed Platform SDK.');
+            return ExitCode.usage.code;
+          case IndexErrors.wrongIndex:
+            _logger.info('You specified the wrong index Platform SDK.');
+            return ExitCode.usage.code;
+        }
+        final device = devices[index];
+        devices.clear();
+        devices.add(device);
+      }
 
       if (devices.isEmpty) {
         return ExitCode.usage.code;
@@ -213,26 +161,26 @@ class CommandsDevice extends Command<int> {
         }
         switch (arg) {
           case CommandsDeviceArg.ssh_copy:
-            await _ssh_copy(device);
+            stream = await _ssh_copy(device);
             break;
           case CommandsDeviceArg.command:
-            await _command(device);
+            stream = await _command(device);
             break;
           case CommandsDeviceArg.upload:
-            await _upload(device);
+            stream = await _upload(device);
             break;
           case CommandsDeviceArg.install:
-            await _install(device);
+            stream = await _install(device);
             break;
           case CommandsDeviceArg.run:
-            await _run(device);
+            stream = await _run(device);
             break;
-          case CommandsDeviceArg.firejail:
-            await _firejail(device);
-            break;
-          case CommandsDeviceArg.firejail_dbus:
-            await _firejail_dbus(device);
-            break;
+        }
+
+        if (stream == null) {
+          return ExitCode.usage.code;
+        } else {
+          await stdout.addStream(stream);
         }
       }
     } else {
@@ -241,34 +189,30 @@ class CommandsDevice extends Command<int> {
     return ExitCode.success.code;
   }
 
-  Future<void> _ssh_copy(Map<String, dynamic> device) async {
-    final process = await Process.start(
+  Future<Stream<List<int>>?> _ssh_copy(Map<String, dynamic> device) async {
+    return await Helper.processStream(
       p.join(
         pathSnap,
         'scripts',
         'device_ssh_copy.sh',
       ),
-      [
+      arguments: [
         '-i',
         device['ip']!,
         '-p',
         device['port']!,
       ],
     );
-    await stdout.addStream(StreamGroup.merge([
-      process.stdout,
-      process.stderr,
-    ]));
   }
 
-  Future<void> _command(Map<String, dynamic> device) async {
-    final process = await Process.start(
+  Future<Stream<List<int>>?> _command(Map<String, dynamic> device) async {
+    return await Helper.processStream(
       p.join(
         pathSnap,
         'scripts',
         'device_command.sh',
       ),
-      [
+      arguments: [
         '-i',
         device['ip']!,
         '-p',
@@ -277,20 +221,16 @@ class CommandsDevice extends Command<int> {
         argResults?['command'],
       ],
     );
-    await stdout.addStream(StreamGroup.merge([
-      process.stdout,
-      process.stderr,
-    ]));
   }
 
-  Future<void> _upload(Map<String, dynamic> device) async {
-    final process = await Process.start(
+  Future<Stream<List<int>>?> _upload(Map<String, dynamic> device) async {
+    return await Helper.processStream(
       p.join(
         pathSnap,
         'scripts',
         'device_upload.sh',
       ),
-      [
+      arguments: [
         '-i',
         device['ip']!,
         '-p',
@@ -299,20 +239,16 @@ class CommandsDevice extends Command<int> {
         argResults!['upload'].toString(),
       ],
     );
-    await stdout.addStream(StreamGroup.merge([
-      process.stdout,
-      process.stderr,
-    ]));
   }
 
-  Future<void> _install(Map<String, dynamic> device) async {
-    final process = await Process.start(
+  Future<Stream<List<int>>?> _install(Map<String, dynamic> device) async {
+    return await Helper.processStream(
       p.join(
         pathSnap,
         'scripts',
         'device_install.sh',
       ),
-      [
+      arguments: [
         '-i',
         device['ip']!,
         '-p',
@@ -323,20 +259,16 @@ class CommandsDevice extends Command<int> {
         device['pass']!,
       ],
     );
-    await stdout.addStream(StreamGroup.merge([
-      process.stdout,
-      process.stderr,
-    ]));
   }
 
-  Future<void> _run(Map<String, dynamic> device) async {
-    final process = await Process.start(
+  Future<Stream<List<int>>?> _run(Map<String, dynamic> device) async {
+    return await Helper.processStream(
       p.join(
         pathSnap,
         'scripts',
         'device_app_run.sh',
       ),
-      [
+      arguments: [
         '-i',
         device['ip']!,
         '-p',
@@ -345,53 +277,5 @@ class CommandsDevice extends Command<int> {
         argResults?['run'],
       ],
     );
-    await stdout.addStream(StreamGroup.merge([
-      process.stdout,
-      process.stderr,
-    ]));
-  }
-
-  Future<void> _firejail(Map<String, dynamic> device) async {
-    final process = await Process.start(
-      p.join(
-        pathSnap,
-        'scripts',
-        'device_app_run_firejail.sh',
-      ),
-      [
-        '-i',
-        device['ip']!,
-        '-p',
-        device['port']!,
-        '-a',
-        argResults?['firejail'],
-      ],
-    );
-    await stdout.addStream(StreamGroup.merge([
-      process.stdout,
-      process.stderr,
-    ]));
-  }
-
-  Future<void> _firejail_dbus(Map<String, dynamic> device) async {
-    final process = await Process.start(
-      p.join(
-        pathSnap,
-        'scripts',
-        'device_app_run_firejail_dbus.sh',
-      ),
-      [
-        '-i',
-        device['ip']!,
-        '-p',
-        device['port']!,
-        '-a',
-        argResults?['firejail-dbus'],
-      ],
-    );
-    await stdout.addStream(StreamGroup.merge([
-      process.stdout,
-      process.stderr,
-    ]));
   }
 }

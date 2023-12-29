@@ -38,12 +38,38 @@ class Configuration {
       for (final device in devices) {
         try {
           result.add({
+            'name': device['ip']!,
             'ip': device['ip']!,
             'port': (device['port'] ?? 22).toString(),
             'pass': device['pass']!,
           });
         } catch (e) {
           print('Get devices: $e');
+        }
+      }
+    }
+    return result;
+  }
+
+  static List<Map<String, dynamic>> psdk() {
+    final List<Map<String, dynamic>> result = [];
+
+    if (_data['psdk'] != null) {
+      final psdk = _data['psdk'] as YamlList;
+      for (final data in psdk) {
+        try {
+          final List<String> targets = [];
+          for (final target in (data['targets'] as YamlList)) {
+            targets.add(target.toString());
+          }
+          result.add({
+            'version': p.basename(data['chroot']!).split('-').elementAt(1),
+            'chroot': data['chroot']!,
+            'tooling': data['tooling']!,
+            'targets': targets,
+          });
+        } catch (e) {
+          print('Get psdk: $e');
         }
       }
     }
