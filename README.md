@@ -1,7 +1,5 @@
 # Aurora CLI
 
-> На данный момент с реорганизацией проекта Flutter для ОС Аврора раздел приложения `flutter` сломан. Уже занимаюсь ремонтом. FYI.
-
 ![picture](data/preview2.png)
 
 [![aurora-cli](https://snapcraft.io/aurora-cli/badge.svg)](https://snapcraft.io/aurora-cli)
