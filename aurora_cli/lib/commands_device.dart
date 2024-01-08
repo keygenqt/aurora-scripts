@@ -72,8 +72,10 @@ class CommandsDevice extends Command<int> {
     if (Platform.environment.containsKey('SNAP_USER_COMMON')) {
       home = '${Platform.environment['SNAP_USER_COMMON']}/../../..';
     }
-    final emulator =
-        await Directory('$home/AuroraOS/emulator/').listSync().firstOrNull;
+    final emulator = await Directory('$home/AuroraOS/emulator/')
+        .listSync()
+        .where((e) => p.basename(e.path).contains('AuroraOS'))
+        .firstOrNull;
     if (emulator != null && argResults?['ssh-copy'] != true) {
       devices.insert(0, {
         'name': p.basename(emulator.path),
