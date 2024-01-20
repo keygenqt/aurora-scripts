@@ -4,7 +4,7 @@
 ## Build and run dart application with arguments
 ################################################
 
-cd aurora_cli
+cd aurora_cli || exit
 
 # Check config
 if [ ! -f "configuration.yaml" ]; then

@@ -1,21 +1,38 @@
 
 
 
-## Updated: 29/12/2023 19:46:10 PM
+## Updated: 20/01/2024 10:21:22 AM
 
 ## Info
 
-- Last tag: 1.3.0
-- Released: 3
+- Last tag: 1.3.2
+- Released: 4
 
 ## Versions
+- Version: 1.3.2 (20/01/2024)
 - Version: 1.3.0 (29/12/2023)
 - Version: 1.1.4 (18/12/2023)
 - Version: 1.0.0 (02/12/2023)
 
 
-### HEAD (29/12/2023 19:46:10 PM)
+### HEAD (20/01/2024 10:21:22 AM)
 
+
+### Version: 1.3.2 (20/01/2024)
+
+
+#### Feature
+
+*None*
+
+#### Change
+
+*None*
+
+#### Bug
+
+* Fix find emulator (Vitaliy Zarubin)
+* Add filter for search emulator (Vitaliy Zarubin)
 
 ### Version: 1.3.0 (29/12/2023)
 

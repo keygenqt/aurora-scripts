@@ -1,8 +1,8 @@
 #!/bin/bash
 
-########################
-## Buid snap application
-########################
+#########################
+## Build snap application
+#########################
 
 # Remove
 sudo snap remove aurora-cli
