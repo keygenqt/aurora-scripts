@@ -68,21 +68,27 @@ class CommandsDevice extends Command<int> {
 
   Future<List<Map<String, dynamic>>> _getDevices() async {
     final devices = Configuration.devices();
+
     String home = Platform.environment['HOME']!;
+
     if (Platform.environment.containsKey('SNAP_USER_COMMON')) {
       home = '${Platform.environment['SNAP_USER_COMMON']}/../../..';
     }
-    final emulator = await Directory('$home/AuroraOS/emulator/')
-        .listSync()
-        .where((e) => p.basename(e.path).contains('AuroraOS'))
-        .firstOrNull;
-    if (emulator != null && argResults?['ssh-copy'] != true) {
-      devices.insert(0, {
-        'name': p.basename(emulator.path),
-        'ip': p.basename(emulator.path),
-        'port': '2223',
-        'pass': '-',
-      });
+
+    final emulatorDir = await Directory('$home/AuroraOS/emulator/');
+
+    if (await emulatorDir.exists() && argResults?['ssh-copy'] != true) {
+      final emulator = emulatorDir.listSync()
+          .where((e) => p.basename(e.path).contains('AuroraOS'))
+          .firstOrNull;
+      if (emulator != null) {
+        devices.insert(0, {
+          'name': p.basename(emulator.path),
+          'ip': p.basename(emulator.path),
+          'port': '2223',
+          'pass': '-',
+        });
+      }
     }
     return devices;
   }
