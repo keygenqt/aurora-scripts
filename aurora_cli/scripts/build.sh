@@ -1,10 +1,10 @@
 #!/bin/bash
 
-########################
-## Buid dart application
-########################
+#########################
+## Build dart application
+#########################
 
-cd aurora_cli
+cd aurora_cli || exit
 
 # Check config
 if [ ! -f "configuration.yaml" ]; then
