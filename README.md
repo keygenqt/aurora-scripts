@@ -1,4 +1,4 @@
-# Aurora CLI
+# Aurora Scripts
 
 ![picture](data/preview2.png)
 
